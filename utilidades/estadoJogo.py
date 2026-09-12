@@ -97,7 +97,7 @@ class EstadoJogo:
         if self.jogo_iniciado and not self.vitoria and not self.derrota:
             if tempo_atual - self.ultimo_movimento_ia > config.TEMPO_MOVIMENTO_IA:
                 self.inimigo.atualizar_caminho(self.pos_jogador, config.LINHAS, config.COLUNAS, self.mapa)
-                self.inimigo.movimentar() if hasattr(self.inimigo, "movimentar") else self.inimigo.mover()
+                self.inimigo.mover()
                 self.rastro_inimigo.add(tuple(self.inimigo.posicao))
                 self.ultimo_movimento_ia = tempo_atual
 
