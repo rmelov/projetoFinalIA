@@ -1,9 +1,9 @@
-from algoritmos.lf.buscaNP import buscaNP
+from algoritmos.busca.BuscaNP import BuscaNP
 
 class Perseguidor:
     def __init__(self, pos_inicial):
         self.posicao = list(pos_inicial)
-        self.buscador = buscaNP()
+        self.buscador = BuscaNP()
         self.caminho_atual = []
 
     def atualizar_caminho(self, posicao_jogador, nx, ny, mapa):
