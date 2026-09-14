@@ -10,7 +10,7 @@ class GerenciadorJogo:
         self.tela = tela
         self.renderizador = renderizador
         self.renderizador_itens = RenderizadorItens(tela, renderizador.conversor)
-        self.jogo = EstadoJogo()
+        self.jogo = EstadoJogo(renderizador.conversor)
         self.relogio = pygame.time.Clock()
 
     def executar(self):
@@ -54,9 +54,20 @@ class GerenciadorJogo:
     def _renderizar_quadro(self, tempo_atual):
         self.tela.fill((20, 20, 25))
         self.renderizador.desenhar_cena(
-            config.LINHAS, config.COLUNAS, self.jogo.mapa, self.jogo.pos_jogador, 
-            self.jogo.inimigo.posicao, self.jogo.pos_saida, self.jogo.rastro_inimigo, self.jogo.pocao.ativa,
-            renderizador_itens=self.renderizador_itens, item=self.jogo.pocao
+            linhas=config.LINHAS,
+            colunas=config.COLUNAS,
+            mapa=self.jogo.mapa,
+            pos_jog=self.jogo.pos_jogador,
+            pos_inimigo=self.jogo.inimigo.posicao,
+            saida_obj=self.jogo.saida_obj,
+            rastro=self.jogo.rastro_inimigo,
+            pocao_ativa=self.jogo.pocao.ativa,
+            renderizador_itens=self.renderizador_itens,
+            item=self.jogo.pocao,
+            vortex=self.jogo.vortex,
+            tempo_atual=tempo_atual,
+            vitoria=self.jogo.vitoria,
+            gerenciador_textos=self.jogo.gerenciador_textos
         )
 
         self.renderizador.desenhar_interface(
@@ -64,6 +75,8 @@ class GerenciadorJogo:
             self.jogo.pocao.tempo_fim, tempo_atual, self.jogo.pocao.frascos, self.jogo.vitoria, self.jogo.derrota,
             total_itens=self.jogo.contar_total_itens(),
             renderizador_itens=self.renderizador_itens,
-            item_exemplo=self.jogo.pocao
+            item_exemplo=self.jogo.pocao,
+            pontuacao_total=self.jogo.obter_pontuacao_total(),
+            nivel_atual=self.jogo.nivel_atual
         )
         pygame.display.flip()

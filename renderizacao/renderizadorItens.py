@@ -1,11 +1,13 @@
 import os
 import pygame
+from utilidades.animadorSprite import AnimadorSprite
 
 class RenderizadorItens:
     def __init__(self, tela, conversor):
         self.tela = tela
         self.conversor = conversor
         self._cache_imagens = {}
+        self._cache_animadores = {}
 
     def _carregar_imagem(self, caminho):
         if caminho not in self._cache_imagens:
@@ -18,19 +20,27 @@ class RenderizadorItens:
                 self._cache_imagens[caminho] = surf
         return self._cache_imagens[caminho]
 
-    def desenhar_item(self, item):
-        """Método genérico para renderizar qualquer item que possua posicao e imagem_path."""
+    def _obter_animador(self, caminho):
+        if caminho not in self._cache_animadores:
+            self._cache_animadores[caminho] = AnimadorSprite(caminho)
+        return self._cache_animadores[caminho]
+
+    def desenhar_item(self, item, tempo_atual=0):
         if hasattr(item, "posicao") and item.posicao:
             r, c = item.posicao
-
             sx, sy = self.conversor.centro_do_tile(r, c)
-            
             caminho_img = getattr(item, "imagem_path", "")
-            img = self._carregar_imagem(caminho_img)
-            
-            rect = img.get_rect(center=(sx, sy - 6))
-            self.tela.blit(img, rect)
 
-    def desenhar_pocao(self, pocao):
-        """Método específico para a Poção de Coragem (mantido por compatibilidade)."""
-        self.desenhar_item(pocao)
+            if hasattr(item, "animador") or "spritesheet" in caminho_img:
+                animador = getattr(item, "animador", None)
+                if not animador:
+                    animador = self._obter_animador(caminho_img)
+                
+                img = animador.obter_frame_atual(tempo_atual)
+                if img:
+                    rect = img.get_rect(center=(sx, sy - 14))
+                    self.tela.blit(img, rect)
+            else:
+                img = self._carregar_imagem(caminho_img)
+                rect = img.get_rect(center=(sx, sy - 6))
+                self.tela.blit(img, rect)

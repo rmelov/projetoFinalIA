@@ -2,20 +2,9 @@ import pygame
 from utilidades import config
 from renderizacao.renderizadorFonte import criar_fonte
 from renderizacao.renderizadorHud import RenderizadorHud
-
-COR_CHAO = (160, 160, 160)
-COR_PAREDE_TOPO = (120, 120, 140)
-COR_PAREDE_ESQ = (80, 80, 100)
-COR_PAREDE_DIR = (50, 50, 70)
-COR_RASTRO = (220, 50, 50, 150)
-COR_JOGADOR = (50, 220, 50)
-COR_JOGADOR_POCAO = (0, 255, 255)
-COR_INIMIGO = (220, 50, 50)
-COR_SAIDA = (255, 215, 0)
-
-ALTURA_PAREDE_CHEIA = 28
-ALTURA_PAREDE_BAIXA = 6
-
+from renderizacao.subRenderizadores.renderizadorChao import RenderizadorChao
+from renderizacao.subRenderizadores.renderizadorParedes import RenderizadorParedes
+from renderizacao.subRenderizadores.renderizadorEntidades import RenderizadorEntidades
 
 class RenderizadorIsometrico:
     def __init__(self, tela, conversor):
@@ -24,47 +13,12 @@ class RenderizadorIsometrico:
         self.fonte_principal = criar_fonte(config.TAMANHO_FONTE_PRINCIPAL)
         self.fonte_sub = criar_fonte(config.TAMANHO_FONTE_SUB)
         self.hud = RenderizadorHud(tela, self.fonte_principal, self.fonte_sub)
+        
+        self.renderizador_chao = RenderizadorChao(tela, conversor)
+        self.renderizador_paredes = RenderizadorParedes(tela, conversor)
+        self.renderizador_entidades = RenderizadorEntidades(tela, conversor)
 
-    def desenhar_chao(self, iso_x, iso_y, cor=COR_CHAO):
-        larg = self.conversor.largura_tile
-        alt = self.conversor.altura_tile
-
-        if len(cor) == 4:
-            superficie_temp = pygame.Surface((larg, alt), pygame.SRCALPHA)
-            pontos_locais = [(larg // 2, 0), (larg, alt // 2), (larg // 2, alt), (0, alt // 2)]
-            pygame.draw.polygon(superficie_temp, cor, pontos_locais)
-            pygame.draw.polygon(superficie_temp, (100, 100, 100, 150), pontos_locais, 1)
-            self.tela.blit(superficie_temp, (iso_x - larg // 2, iso_y))
-        else:
-            pontos = [(iso_x, iso_y), (iso_x + larg // 2, iso_y + alt // 2), (iso_x, iso_y + alt), (iso_x - larg // 2, iso_y + alt // 2)]
-            pygame.draw.polygon(self.tela, cor, pontos)
-            pygame.draw.polygon(self.tela, (100, 100, 100), pontos, 1)
-
-    def desenhar_parede(self, iso_x, iso_y, altura_bloco):
-        x, y = iso_x, iso_y
-        larg = self.conversor.largura_tile
-        alt = self.conversor.altura_tile
-        w_2, h_2 = larg // 2, alt // 2
-
-        topo = [(x, y - altura_bloco), (x + w_2, y + h_2 - altura_bloco), (x, y + alt - altura_bloco), (x - w_2, y + h_2 - altura_bloco)]
-        esquerda = [(x - w_2, y + h_2 - altura_bloco), (x, y + alt - altura_bloco), (x, y + alt), (x - w_2, y + h_2)]
-        direita = [(x, y + alt - altura_bloco), (x + w_2, y + h_2 - altura_bloco), (x + w_2, y + h_2), (x, y + alt)]
-
-        pygame.draw.polygon(self.tela, COR_PAREDE_ESQ, esquerda)
-        pygame.draw.polygon(self.tela, COR_PAREDE_DIR, direita)
-        pygame.draw.polygon(self.tela, COR_PAREDE_TOPO, topo)
-
-        pygame.draw.polygon(self.tela, (20, 20, 20), topo, 1)
-        pygame.draw.polygon(self.tela, (20, 20, 20), esquerda, 1)
-        pygame.draw.polygon(self.tela, (20, 20, 20), direita, 1)
-
-    def desenhar_entidade(self, centro_x, centro_y, cor):
-        raio = 10
-        pygame.draw.ellipse(self.tela, (30, 30, 30), (centro_x - raio, centro_y - 5, raio * 2, 10))
-        pygame.draw.circle(self.tela, cor, (centro_x, centro_y - 8), raio)
-        pygame.draw.circle(self.tela, (0, 0, 0), (centro_x, centro_y - 8), raio, 1)
-
-    def desenhar_cena(self, linhas, colunas, mapa, pos_jog, pos_inimigo, pos_saida, rastro, pocao_ativa, renderizador_itens=None, item=None):
+    def desenhar_cena(self, linhas, colunas, mapa, pos_jog, pos_inimigo, saida_obj, rastro, pocao_ativa, renderizador_itens=None, item=None, vortex=None, tempo_atual=0, vitoria=False, gerenciador_textos=None):
         self.tela.fill((25, 25, 30))
         px, py = pos_jog[0], pos_jog[1]
         elementos = []
@@ -74,47 +28,49 @@ class RenderizadorIsometrico:
                 iso_x, iso_y = self.conversor.cartesiano_para_isometrico(r, c)
                 profundidade = self.conversor.calcular_profundidade(r, c)
 
-                if (r, c) == tuple(pos_saida):
-                    cor_chao = COR_SAIDA
-                elif (r, c) in rastro:
-                    cor_chao = COR_RASTRO
-                else:
-                    cor_chao = COR_CHAO
+                # 1. Chão
+                elementos.append((profundidade, 0, "chao", r, c, iso_x, iso_y, ((r, c) in rastro, saida_obj)))
 
-                elementos.append((profundidade, 0, "chao", r, c, iso_x, iso_y, cor_chao))
-
+                # 2. Itens no chão
                 if item and hasattr(item, "posicao") and item.posicao and tuple(item.posicao) == (r, c):
                     elementos.append((profundidade, 1, "item", r, c, iso_x, iso_y, item))
 
+                if vortex and hasattr(vortex, "posicao") and vortex.posicao and tuple(vortex.posicao) == (r, c):
+                    elementos.append((profundidade, 1, "item", r, c, iso_x, iso_y, vortex))
+
+                if saida_obj and hasattr(saida_obj, "posicao") and saida_obj.posicao and tuple(saida_obj.posicao) == (r, c):
+                    elementos.append((profundidade, 1, "item", r, c, iso_x, iso_y, saida_obj))
+
+                # 3. Paredes
                 if mapa[r][c] == 9:
                     dentro_raio = abs(r - px) <= 2 and abs(c - py) <= 2
                     obstrui = (r >= px and c >= py) and (r > px or c > py)
-                    altura = ALTURA_PAREDE_BAIXA if (dentro_raio and obstrui) else ALTURA_PAREDE_CHEIA
-                    elementos.append((profundidade, 2, "parede", r, c, iso_x, iso_y, altura))
+                    elementos.append((profundidade, 2, "parede", r, c, iso_x, iso_y, dentro_raio and obstrui))
 
-                if [r, c] == list(pos_jog):
-                    cor = COR_JOGADOR_POCAO if pocao_ativa else COR_JOGADOR
-                    elementos.append((profundidade, 3, "jogador", r, c, iso_x, iso_y, cor))
+                # 4. Jogador e Inimigo
+                if [r, c] == list(pos_jog) and not vitoria:
+                    elementos.append((profundidade, 3, "jogador", r, c, iso_x, iso_y, pocao_ativa))
 
                 if [r, c] == list(pos_inimigo):
-                    elementos.append((profundidade, 3, "inimigo", r, c, iso_x, iso_y, COR_INIMIGO))
+                    elementos.append((profundidade, 3, "inimigo", r, c, iso_x, iso_y, None))
 
-        elementos.sort(key=lambda item: (item[0], item[1]))
+        elementos.sort(key=lambda elem: (elem[0], elem[1]))
 
         for elem in elementos:
             _, _, tipo, r, c, iso_x, iso_y, dados = elem
-            cx, cy = self.conversor.centro_do_tile(r, c)
-
+            
             if tipo == "chao":
-                self.desenhar_chao(iso_x, iso_y, dados)
+                eh_rastro, s_obj = dados
+                self.renderizador_chao.desenhar(iso_x, iso_y, r, c, eh_rastro, s_obj)
             elif tipo == "item" and renderizador_itens:
-                renderizador_itens.desenhar_item(dados)
+                renderizador_itens.desenhar_item(dados, tempo_atual)
             elif tipo == "parede":
-                self.desenhar_parede(iso_x, iso_y, dados)
-            elif tipo == "jogador":
-                self.desenhar_entidade(cx, cy, dados)
-            elif tipo == "inimigo":
-                self.desenhar_entidade(cx, cy, dados)
+                self.renderizador_paredes.desenhar(iso_x, iso_y, dados)
+            elif tipo in ("jogador", "inimigo"):
+                self.renderizador_entidades.desenhar(r, c, tipo, dados)
 
-    def desenhar_interface(self, largura_tela, jogo_iniciado, pocao_ativa, tempo_pocao_fim, tempo_atual, frascos, vitoria, derrota, total_itens=0, renderizador_itens=None, item_exemplo=None):
-        self.hud.desenhar(largura_tela, jogo_iniciado, pocao_ativa, tempo_pocao_fim, tempo_atual, vitoria, derrota, total_itens, renderizador_itens, item_exemplo)
+        if gerenciador_textos:
+            gerenciador_textos.atualizar_e_desenhar(self.tela, self.fonte_sub)
+
+    def desenhar_interface(self, largura_tela, jogo_iniciado, pocao_ativa, tempo_pocao_fim, tempo_atual, frascos, vitoria, derrota, total_itens=0, renderizador_itens=None, item_exemplo=None, pontuacao_total=0, nivel_atual=1):
+        self.hud.desenhar(largura_tela, jogo_iniciado, pocao_ativa, tempo_pocao_fim, tempo_atual, vitoria, derrota, total_itens, renderizador_itens, item_exemplo, pontuacao_total, nivel_atual)
