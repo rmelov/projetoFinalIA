@@ -7,22 +7,32 @@ from renderizacao.renderizadorItens import RenderizadorItens
 from renderizacao.renderizadorRotaSaida import RenderizadorRotaSaida
 
 class GerenciadorJogo:
-    def __init__(self, tela, renderizador):
+    def __init__(self, tela, renderizador, modo_jogo="amplitude"):
         self.tela = tela
         self.renderizador = renderizador
         self.renderizador_itens = RenderizadorItens(tela, renderizador.conversor)
         self.renderizador_rota_saida = RenderizadorRotaSaida(renderizador.conversor)
-        self.jogo = EstadoJogo(renderizador.conversor)
+        self.jogo = EstadoJogo(renderizador.conversor, modo_jogo=modo_jogo)
         self.relogio = pygame.time.Clock()
 
-    def executar(self):
+    def definir_modo_jogo(self, modo_jogo):
+        """Reinicia o estado do jogo injetando o novo modo selecionado."""
+        self.jogo = EstadoJogo(self.renderizador.conversor, modo_jogo=modo_jogo)
+
+    def executar(self, modo_jogo=None):
+        if modo_jogo:
+            self.definir_modo_jogo(modo_jogo)
+
         self.jogo.reiniciar()
         self._atualizar_centralizacao_isometrica()
         rodando = True
 
         while rodando:
             tempo_atual = pygame.time.get_ticks()
-            rodando = self._processar_eventos(tempo_atual)
+            acao_evento = self._processar_eventos(tempo_atual)
+            
+            if acao_evento == "sair_menu":
+                return
 
             self._atualizar_logica(tempo_atual)
             self._renderizar_quadro(tempo_atual)
@@ -44,8 +54,8 @@ class GerenciadorJogo:
         for evento in pygame.event.get():
             acao = Controles.verificar_teclas(evento, self.jogo, tempo_atual)
             
-            if acao == "sair":
-                return False
+            if acao == "voltar_menu":
+                return "sair_menu"
             elif acao == "proximo_labirinto":
                 self.jogo.avancar_proximo_labirinto()
                 self._atualizar_centralizacao_isometrica()
@@ -54,7 +64,7 @@ class GerenciadorJogo:
                 self._atualizar_centralizacao_isometrica()
             elif acao == "usar_pocao":
                 self.jogo.usar_pocao(tempo_atual)
-        return True
+        return None
 
     def _atualizar_logica(self, tempo_atual):
         if not self.jogo.vitoria and not self.jogo.derrota:

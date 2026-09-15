@@ -5,6 +5,7 @@ from componentes.conversorIsometrico import ConversorIsometrico
 from renderizacao.renderizadorIsometrico import RenderizadorIsometrico
 from utilidades import config
 from utilidades.gerenciadorJogo import GerenciadorJogo
+from componentes.menu.menu import MenuPrincipal
 
 pygame.init()
 info_display = pygame.display.Info()
@@ -21,6 +22,7 @@ conversor = ConversorIsometrico(
 )
 renderizador = RenderizadorIsometrico(tela, conversor)
 gerenciador = GerenciadorJogo(tela, renderizador)
+menu_principal = MenuPrincipal(tela, gerenciador)
 
 if __name__ == "__main__":
-    gerenciador.executar()
+    menu_principal.executar()

@@ -1,7 +1,7 @@
 from collections import deque
-from .Node import Node
+from algoritmos.busca.Node import Node
 
-class BuscaNP(object):
+class buscaNP(object):
 #--------------------------------------------------------------------------
 # SUCESSORES PARA GRAFO
 #--------------------------------------------------------------------------

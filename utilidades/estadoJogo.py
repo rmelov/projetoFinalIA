@@ -14,7 +14,7 @@ from itens.saida import Saida
 from utilidades import config
 
 class EstadoJogo:
-    def __init__(self, conversor=None):
+    def __init__(self, conversor=None, modo_jogo="amplitude"):
         self.mapa = []
         self.pos_jogador = []
         self.pos_saida = ()
@@ -43,7 +43,7 @@ class EstadoJogo:
         self.ultimo_passo_jogador = 0
         self.tempo_congelamento_inimigo = 0
 
-        self.gerenciador_recorde = GerenciadorRecorde()
+        self.gerenciador_recorde = GerenciadorRecorde(modo_jogo=modo_jogo)
         self.pontuacao_maxima, self.nivel_maximo = self.gerenciador_recorde.carregar()
 
     @property
@@ -64,16 +64,13 @@ class EstadoJogo:
         return False
 
     def reiniciar(self):
-        """Reinicia a partida mantendo rigorosamente o nível atual e encerrando a poção."""
         self.inventario_partida.esvaziar()
         self.pontuacao_partida.esvaziar()
         self.pocao.ativa = False
         self.pocao.tempo_fim = 0
-        
         self._preparar_novo_labirinto(resetar_total=True)
 
     def avancar_proximo_labirinto(self):
-        """Avança de nível e prepara o próximo labirinto após a vitória."""
         itens_ganhos = self.inventario_partida.resgatar_itens()
         self.inventario_geral.adicionar_lote(itens_ganhos)
         

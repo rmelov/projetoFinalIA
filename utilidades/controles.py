@@ -5,7 +5,7 @@ class Controles:
     def verificar_teclas(evento, jogo, tempo_atual):
         if evento.type == pygame.KEYDOWN:
             if evento.key == pygame.K_ESCAPE:
-                return "sair"
+                return "voltar_menu"
             elif evento.key == pygame.K_r:
                 if jogo.vitoria:
                     return "proximo_labirinto"
@@ -32,3 +32,21 @@ class Controles:
             dy = -1
 
         return dx, dy
+
+    @staticmethod
+    def navegar_menu(evento, indice_atual, total_opcoes):
+        """Gerencia a navegação vertical por teclado (W/S ou Setas Cima/Baixo) em menus."""
+        if evento.type == pygame.KEYDOWN:
+            if evento.key in (pygame.K_w, pygame.K_UP):
+                return (indice_atual - 1) % total_opcoes
+            elif evento.key in (pygame.K_s, pygame.K_DOWN):
+                return (indice_atual + 1) % total_opcoes
+        return indice_atual
+
+    @staticmethod
+    def confirmar_menu(evento):
+        """Verifica se a tecla de confirmação (Enter ou Espaço) foi pressionada."""
+        if evento.type == pygame.KEYDOWN:
+            if evento.key in (pygame.K_RETURN, pygame.K_SPACE):
+                return True
+        return False
