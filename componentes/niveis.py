@@ -1,3 +1,5 @@
+from utilidades import config
+
 class Nivel:
     def __init__(self):
         self._fibonacci_cache = [1, 2, 3]
@@ -12,3 +14,9 @@ class Nivel:
         if indice_nivel < 0:
             indice_nivel = 0
         return self._obter_fibonacci(indice_nivel)
+
+    def calcular_tamanho_grid(self, indice_nivel):
+        """A cada dois níveis, soma +2 no tamanho do grid base."""
+        aumento = (indice_nivel // 2) * 2
+        tamanho = config.TAMANHO_GRID + aumento
+        return min(tamanho, config.TAMANHO_GRID_MAX)

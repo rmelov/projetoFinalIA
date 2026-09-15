@@ -16,9 +16,9 @@ class ConversorIsometrico:
         self.deslocamento_y = deslocamento_y
 
     def cartesiano_para_isometrico(self, x, y):
-        """Retorna o topo superior (vértice superior) da célula isométrica."""
-        iso_x = (x - y) * (self.largura_tile // 2) + self.deslocamento_x
-        iso_y = (x + y) * (self.altura_tile // 2) + self.deslocamento_y
+        """Retorna o topo superior (vértice superior) da célula isométrica corrigido."""
+        iso_x = (y - x) * (self.largura_tile // 2) + self.deslocamento_x
+        iso_y = (y + x) * (self.altura_tile // 2) + self.deslocamento_y
         return iso_x, iso_y
 
     def centro_do_tile(self, x, y):

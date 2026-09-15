@@ -23,12 +23,12 @@ class Controles:
         dx, dy = 0, 0
 
         if teclas[pygame.K_w] or teclas[pygame.K_UP]:
-            dy = -1
-        elif teclas[pygame.K_d] or teclas[pygame.K_RIGHT]:
-            dx = 1
-        elif teclas[pygame.K_s] or teclas[pygame.K_DOWN]:
-            dy = 1
-        elif teclas[pygame.K_a] or teclas[pygame.K_LEFT]:
             dx = -1
+        elif teclas[pygame.K_d] or teclas[pygame.K_RIGHT]:
+            dy = 1
+        elif teclas[pygame.K_s] or teclas[pygame.K_DOWN]:
+            dx = 1
+        elif teclas[pygame.K_a] or teclas[pygame.K_LEFT]:
+            dy = -1
 
         return dx, dy

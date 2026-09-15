@@ -1,13 +1,13 @@
-import pygame
 import random
 from componentes.geradorLabirinto import gerar_labirinto_base
-from componentes.perseguidor import Perseguidor
+from componentes.entidades.oponentes.perseguidor import Perseguidor
 from componentes.inventario import Inventario
 from componentes.inventarioPartida import InventarioPartida
 from componentes.pontuacao import Pontuacao
 from componentes.pontuacaoPartida import PontuacaoPartida
 from componentes.textosPontuacao import GerenciadorTextosFlutuantes
 from componentes.niveis import Nivel
+from componentes.recorde import GerenciadorRecorde
 from itens.pocaoCoragem import PocaoCoragem
 from itens.vortex import Vortex
 from itens.saida import Saida
@@ -43,6 +43,9 @@ class EstadoJogo:
         self.ultimo_passo_jogador = 0
         self.tempo_congelamento_inimigo = 0
 
+        self.gerenciador_recorde = GerenciadorRecorde()
+        self.pontuacao_maxima, self.nivel_maximo = self.gerenciador_recorde.carregar()
+
     @property
     def nivel_atual(self):
         return self.sistema_nivel.obter_valor_nivel(self.indice_nivel)
@@ -61,9 +64,12 @@ class EstadoJogo:
         return False
 
     def reiniciar(self):
-        """Reinicia a partida mantendo rigorosamente o nível atual (sem alterar a progressão)."""
+        """Reinicia a partida mantendo rigorosamente o nível atual e encerrando a poção."""
         self.inventario_partida.esvaziar()
         self.pontuacao_partida.esvaziar()
+        self.pocao.ativa = False
+        self.pocao.tempo_fim = 0
+        
         self._preparar_novo_labirinto(resetar_total=True)
 
     def avancar_proximo_labirinto(self):
@@ -77,45 +83,66 @@ class EstadoJogo:
         self.indice_nivel += 1
         self._preparar_novo_labirinto(resetar_total=True)
 
+    def _obter_dimensoes_atuais(self):
+        tamanho = self.sistema_nivel.calcular_tamanho_grid(self.indice_nivel)
+        return tamanho, tamanho
+
     def _preparar_novo_labirinto(self, resetar_total=True):
+        linhas_atuais, colunas_atuais = self._obter_dimensoes_atuais()
+        pocao_ativa_anterior = self.pocao.ativa
+        tempo_fim_anterior = self.pocao.tempo_fim
+        frascos_atuais = self.pocao.frascos
+
         if resetar_total or not self.pos_jogador or not self.inimigo:
-            self.mapa, pos_jog_tup, pos_inim_tup, self.pos_saida = gerar_labirinto_base(config.LINHAS, config.COLUNAS)
+            self.mapa, pos_jog_tup, pos_inim_tup, self.pos_saida = gerar_labirinto_base(linhas_atuais, colunas_atuais)
             self.pos_jogador = list(pos_jog_tup)
             self.inimigo = Perseguidor(pos_inicial=pos_inim_tup)
+            self.inimigo.ajustar_velocidade(self.indice_nivel)
             self.rastro_inimigo = {tuple(pos_inim_tup)}
             self.jogo_iniciado = False
+            import pygame
             self.ultimo_movimento_ia = pygame.time.get_ticks()
             self.ultimo_passo_jogador = pygame.time.get_ticks()
         else:
             pos_jog_atual = tuple(self.pos_jogador)
             pos_inim_atual = tuple(self.inimigo.posicao)
             
-            self.mapa, _, _, self.pos_saida = gerar_labirinto_base(config.LINHAS, config.COLUNAS)
+            self.mapa, _, _, self.pos_saida = gerar_labirinto_base(linhas_atuais, colunas_atuais)
             
-            self.mapa[pos_jog_atual[0]][pos_jog_atual[1]] = 0
-            self.mapa[pos_inim_atual[0]][pos_inim_atual[1]] = 0
+            if pos_jog_atual[0] < linhas_atuais and pos_jog_atual[1] < colunas_atuais:
+                self.mapa[pos_jog_atual[0]][pos_jog_atual[1]] = 0
+                self.pos_jogador = list(pos_jog_atual)
+            else:
+                self.pos_jogador = [1, 1]
+
+            if pos_inim_atual[0] < linhas_atuais and pos_inim_atual[1] < colunas_atuais:
+                self.mapa[pos_inim_atual[0]][pos_inim_atual[1]] = 0
+                self.inimigo.posicao = list(pos_inim_atual)
+            else:
+                self.inimigo.posicao = [1, 2]
+
             self.mapa[self.pos_saida[0]][self.pos_saida[1]] = 0
-            
-            self.pos_jogador = list(pos_jog_atual)
-            self.inimigo.posicao = list(pos_inim_atual)
-            self.rastro_inimigo = {pos_inim_atual}
+            self.rastro_inimigo = {tuple(self.inimigo.posicao)}
 
+        self.inimigo.ajustar_velocidade(self.indice_nivel)
         self.saida_obj.posicao = self.pos_saida
-
         self.pocao = PocaoCoragem(quantidade_inicial=0)
-        self.sincronizar_frascos()
-        self.pocao.nascer(self.mapa, config.LINHAS, config.COLUNAS, self.pos_jogador, self.pos_saida, self.inimigo.posicao)
+        self.pocao.frascos = frascos_atuais
+        self.pocao.ativa = pocao_ativa_anterior
+        self.pocao.tempo_fim = tempo_fim_anterior
+
+        self.pocao.nascer(self.mapa, linhas_atuais, colunas_atuais, self.pos_jogador, self.pos_saida, self.inimigo.posicao)
 
         self.vortex = Vortex()
-        self.posicionar_vortex()
+        self.posicionar_vortex(linhas_atuais, colunas_atuais)
 
         self.vitoria = False
         self.derrota = False
         self.tempo_congelamento_inimigo = 0
 
-    def posicionar_vortex(self):
+    def posicionar_vortex(self, linhas, colunas):
         celulas_livres = [
-            (r, c) for r in range(config.LINHAS) for c in range(config.COLUNAS) 
+            (r, c) for r in range(linhas) for c in range(colunas) 
             if self.mapa[r][c] == 0 
             and (r, c) != tuple(self.pos_saida)
             and (r, c) != tuple(self.pos_jogador)
@@ -139,8 +166,9 @@ class EstadoJogo:
         if dx == 0 and dy == 0:
             return
 
+        linhas_atuais, colunas_atuais = self._obter_dimensoes_atuais()
         nx, ny = self.pos_jogador[0] + dx, self.pos_jogador[1] + dy
-        if not (0 <= nx < config.LINHAS and 0 <= ny < config.COLUNAS and self.mapa[nx][ny] == 0):
+        if not (0 <= nx < linhas_atuais and 0 <= ny < colunas_atuais and self.mapa[nx][ny] == 0):
             return
 
         self.pos_jogador = [nx, ny]
@@ -148,6 +176,7 @@ class EstadoJogo:
 
         if not self.jogo_iniciado:
             self.jogo_iniciado = True
+            import pygame
             self.ultimo_movimento_ia = tempo_atual
 
         pos_tupla = tuple(self.pos_jogador)
@@ -186,8 +215,9 @@ class EstadoJogo:
             if tempo_atual < self.tempo_congelamento_inimigo:
                 return
 
-            if tempo_atual - self.ultimo_movimento_ia > config.TEMPO_MOVIMENTO_IA:
-                self.inimigo.atualizar_caminho(self.pos_jogador, config.LINHAS, config.COLUNAS, self.mapa)
+            if tempo_atual - self.ultimo_movimento_ia > self.inimigo.tempo_movimento_ia:
+                linhas_atuais, colunas_atuais = self._obter_dimensoes_atuais()
+                self.inimigo.atualizar_caminho(self.pos_jogador, linhas_atuais, colunas_atuais, self.mapa)
                 self.inimigo.mover()
                 
                 pos_inimigo_tup = tuple(self.inimigo.posicao)
@@ -205,9 +235,13 @@ class EstadoJogo:
     def _verificar_condicoes_fim_jogo(self):
         if tuple(self.pos_jogador) == self.pos_saida and not self.vitoria:
             self.vitoria = True
+            self.pocao.ativa = False
+            self.pocao.tempo_fim = 0
+            
             self.pontuacao_partida.adicionar(self.nivel_atual)
             pontos_ganhos = self.pontuacao_partida.resgatar_pontos()
             self.pontuacao_geral.adicionar(pontos_ganhos)
+            self.gerenciador_recorde.salvar_se_maior(self.obter_pontuacao_total(), self.nivel_atual)
 
         perdeu = False
         if self.pos_jogador == self.inimigo.posicao:
@@ -218,6 +252,9 @@ class EstadoJogo:
 
         if perdeu and not self.derrota:
             self.derrota = True
+            self.pocao.ativa = False
+            self.pocao.tempo_fim = 0
+            
             self.pontuacao_partida.esvaziar()
             penalidade = self.nivel_atual
             self.pontuacao_geral.subtrair(penalidade)

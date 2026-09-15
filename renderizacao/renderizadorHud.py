@@ -1,3 +1,6 @@
+import pygame
+from renderizacao.renderizadorRecorde import RenderizadorRecorde
+
 class RenderizadorHud:
     """Responsável por desenhar elementos de interface (HUD, status e telas de fim de jogo)."""
     
@@ -9,6 +12,7 @@ class RenderizadorHud:
         self.tela = tela
         self.fonte_principal = fonte_principal
         self.fonte_sub = fonte_sub
+        self.renderizador_recorde = RenderizadorRecorde(fonte_sub)
 
     def desenhar_item_slot(self, renderizador_itens, item, quantidade, x, y):
         """Renderiza o ícone do item e o contador em formato limpo, sem fundo quadriculado."""
@@ -51,10 +55,11 @@ class RenderizadorHud:
             return f"POÇÃO ATIVA ({tempo_restante}s)"
         return "Espaço para usar a poção"
 
-    def desenhar(self, largura_tela, jogo_iniciado, pocao_ativa, tempo_pocao_fim, tempo_atual, vitoria, derrota, total_itens=0, renderizador_itens=None, item_exemplo=None, pontuacao_total=0, nivel_atual=1):
+    def desenhar(self, largura_tela, altura_tela, jogo_iniciado, pocao_ativa, tempo_pocao_fim, tempo_atual, vitoria, derrota, total_itens=0, renderizador_itens=None, item_exemplo=None, pontuacao_total=0, nivel_atual=1, gerenciador_recorde=None):
         """Orquestra a renderização completa da interface de usuário em fluxo vertical dinâmico."""
         if vitoria or derrota:
             self.desenhar_telas_fim(largura_tela, vitoria, derrota, pontuacao_total)
+            self.renderizador_recorde.desenhar(self.tela, gerenciador_recorde, altura_tela)
             return
 
         status = self._obter_texto_status(jogo_iniciado, pocao_ativa, tempo_pocao_fim, tempo_atual)
@@ -73,3 +78,5 @@ class RenderizadorHud:
 
         y_slot = y_pontos + texto_pontos.get_height() + self._ESPAÇAMENTO_VERTICAL
         self.desenhar_item_slot(renderizador_itens, item_exemplo, total_itens, self._PADDING_X, y_slot)
+
+        self.renderizador_recorde.desenhar(self.tela, gerenciador_recorde, altura_tela)
