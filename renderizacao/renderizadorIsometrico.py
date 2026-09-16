@@ -90,9 +90,10 @@ class RenderizadorIsometrico:
 
         self.renderizador_minimapa.desenhar(self.tela, mapa)
 
-    def desenhar_interface(self, largura_tela, altura_tela, jogo_iniciado, pocao_ativa, tempo_pocao_fim, tempo_atual, frascos, vitoria, derrota, total_itens=0, renderizador_itens=None, item_exemplo=None, pontuacao_total=0, nivel_atual=1, gerenciador_recorde=None):
+    def desenhar_interface(self, largura_tela, altura_tela, jogo_iniciado, pocao_ativa, tempo_pocao_fim, tempo_atual, frascos, vitoria, derrota, total_itens=0, renderizador_itens=None, item_exemplo=None, pontuacao_total=0, nivel_atual=1, gerenciador_recorde=None, texto_origem="", texto_destino="", campo_ativo=None):
         self.hud.desenhar(
             largura_tela, altura_tela, jogo_iniciado, pocao_ativa, tempo_pocao_fim, 
             tempo_atual, vitoria, derrota, total_itens, renderizador_itens, 
-            item_exemplo, pontuacao_total, nivel_atual, gerenciador_recorde
+            item_exemplo, pontuacao_total, nivel_atual, gerenciador_recorde,
+            texto_origem=texto_origem, texto_destino=texto_destino, campo_ativo=campo_ativo
         )

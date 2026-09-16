@@ -37,13 +37,20 @@ class MenuPrincipal:
             
             if self.estado_atual == "principal":
                 self._desenhar_menu_principal()
+            elif self.estado_atual == "configurar_campos":
+                self._desenhar_configurar_campos()
             elif self.estado_atual == "modo_jogo":
                 resultado_modo = self.menu_modos.executar()
                 if resultado_modo == "voltar":
                     self.estado_atual = "principal"
                 elif resultado_modo in ["amplitude", "profundidade", "prof_limitada", "aprofundamento_iterativo", "bidirecional"]:
                     self.modo_selecionado = resultado_modo
-                    self.estado_atual = "jogando"
+                    # Após escolher modo, abrir diálogo para origem/destino antes de iniciar
+                    self.estado_atual = "configurar_campos"
+                    self.input_origem = ""
+                    self.input_destino = ""
+                    self.input_ativo = None
+                    self.ret_btn_jogar = None
             elif self.estado_atual == "tutorial":
                 self._desenhar_tutorial()
             elif self.estado_atual == "sobre":
@@ -70,9 +77,32 @@ class MenuPrincipal:
                     elif self.estado_atual in ("tutorial", "sobre"):
                         if Controles.confirmar_menu(evento) or evento.key in (pygame.K_RETURN, pygame.K_SPACE):
                             self.estado_atual = "principal"
+                    elif self.estado_atual == "configurar_campos":
+                        # Tratamento de digitação nos campos do diálogo
+                        if evento.key == pygame.K_RETURN and self.input_ativo is None:
+                            # Enter sem campo ativo: tentar iniciar jogo
+                            self._iniciar_jogo_com_campos()
+                        elif evento.key == pygame.K_ESCAPE:
+                            self.estado_atual = "principal"
+                        elif evento.key == pygame.K_BACKSPACE:
+                            if self.input_ativo == "origem":
+                                self.input_origem = self.input_origem[:-1]
+                            elif self.input_ativo == "destino":
+                                self.input_destino = self.input_destino[:-1]
+                        else:
+                            tecla_texto = evento.unicode
+                            if tecla_texto and tecla_texto in "0123456789,() ":
+                                if self.input_ativo == "origem":
+                                    self.input_origem += tecla_texto
+                                elif self.input_ativo == "destino":
+                                    self.input_destino += tecla_texto
                 elif evento.type == pygame.MOUSEBUTTONDOWN:
                     if evento.button == 1:
-                        self._tratar_clique(evento.pos)
+                        # Em tela de configuração, tratar cliques especiais
+                        if self.estado_atual == "configurar_campos":
+                            self._tratar_clique_config(evento.pos)
+                        else:
+                            self._tratar_clique(evento.pos)
 
             pygame.display.flip()
             relogio.tick(30)
@@ -126,6 +156,92 @@ class MenuPrincipal:
 
         self.ret_voltar = self._desenhar_botao("VOLTAR", config.ALTURA // 2 + 100)
 
+    def _desenhar_configurar_campos(self):
+        # Caixa de diálogo central para inserir origem e destino
+        largura = 860
+        altura = 320
+        x = (config.LARGURA - largura) // 2
+        y = (config.ALTURA - altura) // 2
+
+        fundo = pygame.Surface((largura, altura))
+        fundo.fill((30, 30, 35))
+        pygame.draw.rect(fundo, (200, 200, 200), fundo.get_rect(), 2)
+
+        titulo = self.fonte_texto.render("Configurar Origem e Destino", True, (255, 235, 59))
+        fundo.blit(titulo, (20, 12))
+
+        pad_x = 20
+        label_largura = 140
+        current_y = 70
+        linha_altura = self.fonte_texto.get_height()
+        altura_campo = 36
+
+        # Origem (label e caixa na mesma linha)
+        label_ori = self.fonte_texto.render("Origem:", True, (255, 255, 255))
+        fundo.blit(label_ori, (pad_x, current_y + 30 + (altura_campo - linha_altura) // 2))
+        origem_rect = pygame.Rect(pad_x + label_largura + 20, current_y + 15, 360, altura_campo)
+        cor_o = (100, 100, 100) if getattr(self, 'input_ativo', None) == 'origem' else (60, 60, 60)
+        pygame.draw.rect(fundo, cor_o, origem_rect)
+        pygame.draw.rect(fundo, (150, 150, 150), origem_rect, 1)
+        txt_ori = self.fonte_texto.render(self.input_origem if self.input_origem else "(x,y)", True, (255, 255, 255))
+        fundo.blit(txt_ori, (origem_rect.x + 8, origem_rect.y + 13 + (origem_rect.h - txt_ori.get_height()) // 2))
+
+        current_y = origem_rect.y + origem_rect.h + 24
+
+        # Destino (label e caixa na mesma linha)
+        label_dest = self.fonte_texto.render("Destino:", True, (255, 255, 255))
+        fundo.blit(label_dest, (pad_x, current_y + 30 + (altura_campo - linha_altura) // 2))
+        destino_rect = pygame.Rect(pad_x + label_largura + 20, current_y + 15, 360, altura_campo)
+        cor_d = (100, 100, 100) if getattr(self, 'input_ativo', None) == 'destino' else (60, 60, 60)
+        pygame.draw.rect(fundo, cor_d, destino_rect)
+        pygame.draw.rect(fundo, (150, 150, 150), destino_rect, 1)
+        txt_dest = self.fonte_texto.render(self.input_destino if self.input_destino else "(x,y)", True, (255, 255, 255))
+        fundo.blit(txt_dest, (destino_rect.x + 8, destino_rect.y + 13 + (destino_rect.h - txt_dest.get_height()) // 2))
+
+        mouse_pos = pygame.mouse.get_pos()
+        btn_base = self.fonte_titulo.render("JOGAR", True, (255, 255, 255))
+        btn_hover = self.fonte_titulo.render("JOGAR", True, (255, 235, 59))
+        btn_y = destino_rect.y + destino_rect.h + 90
+
+        btn_rect_tela = btn_base.get_rect(center=(x + largura // 2, y + btn_y))
+        if btn_rect_tela.collidepoint(mouse_pos):
+            btn_surface = btn_hover
+        else:
+            btn_surface = btn_base
+
+        btn_rect_local = btn_surface.get_rect(center=(largura // 2, btn_y))
+        fundo.blit(btn_surface, btn_rect_local)
+
+        self._config_dialog_rects = {
+            'origem': pygame.Rect(x + origem_rect.x, y + origem_rect.y, origem_rect.w, origem_rect.h),
+            'destino': pygame.Rect(x + destino_rect.x, y + destino_rect.y, destino_rect.w, destino_rect.h),
+            'jogar': pygame.Rect(x + btn_rect_local.x, y + btn_rect_local.y, btn_rect_local.w, btn_rect_local.h)
+        }
+
+        self.tela.blit(fundo, (x, y))
+
+    def _tratar_clique_config(self, pos):
+        # Checa se clique foi em algum campo ou botão do diálogo
+        if not hasattr(self, '_config_dialog_rects'):
+            return
+        if self._config_dialog_rects['origem'].collidepoint(pos):
+            self.input_ativo = 'origem'
+        elif self._config_dialog_rects['destino'].collidepoint(pos):
+            self.input_ativo = 'destino'
+        elif self._config_dialog_rects['jogar'].collidepoint(pos):
+            self._iniciar_jogo_com_campos()
+        else:
+            # clique fora: desativar campo
+            self.input_ativo = None
+
+    def _iniciar_jogo_com_campos(self):
+        # Transfere os campos para o gerenciador de jogo e inicia
+        self.gerenciador_jogo.texto_origem = getattr(self, 'input_origem', '')
+        self.gerenciador_jogo.texto_destino = getattr(self, 'input_destino', '')
+        self.gerenciador_jogo.campo_ativo = None
+        self.gerenciador_jogo.executar(modo_jogo=self.modo_selecionado)
+        self.estado_atual = 'principal'
+    
     def _desenhar_botao(self, texto, y):
         superficie_base = self.fonte_texto.render(texto, True, (255, 255, 255))
         retangulo_base = superficie_base.get_rect(center=(config.LARGURA // 2, y))

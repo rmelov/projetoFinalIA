@@ -14,6 +14,33 @@ class RenderizadorHud:
         self.fonte_sub = fonte_sub
         self.renderizador_recorde = RenderizadorRecorde(fonte_sub)
 
+    def calcular_posicoes_campos(self, largura_tela, altura_tela, fonte_sub, padding_x, padding_y, espacamento_vertical):
+        """Calcula e retorna as posições dos retângulos dos campos de entrada."""
+        # Simular o cálculo do método desenhar para obter as posições
+        y_slot = 0  # Vamos calcular step by step
+        
+        # Simulação das posições do HUD
+        y_dica = padding_y + fonte_sub.get_height() + 6
+        texto_nivel = fonte_sub.render(f"Nível: 1", True, (255, 200, 100))
+        y_pontos = y_dica + texto_nivel.get_height() + 4
+        texto_pontos = fonte_sub.render(f"Pontos: 0", True, (255, 215, 0))
+        y_slot = y_pontos + texto_pontos.get_height() + espacamento_vertical
+        
+        y_origem = y_slot + 28 + espacamento_vertical
+        texto_origem = fonte_sub.render("Célula de Origem:", True, (255, 255, 255))
+        
+        origem_rect = pygame.Rect(padding_x + texto_origem.get_width() + 10, y_origem + 4, 100, 28)
+        
+        y_destino = y_origem + texto_origem.get_height() + espacamento_vertical
+        texto_destino = fonte_sub.render("Célula de Destino:", True, (255, 255, 255))
+        
+        destino_rect = pygame.Rect(padding_x + texto_destino.get_width() + 10, y_destino + 4, 100, 28)
+        
+        return {
+            "origem": origem_rect,
+            "destino": destino_rect
+        }
+
     def desenhar_item_slot(self, renderizador_itens, item, quantidade, x, y):
         """Renderiza o ícone do item e o contador em formato limpo, sem fundo quadriculado."""
         if not (renderizador_itens and item):
@@ -55,7 +82,7 @@ class RenderizadorHud:
             return f"POÇÃO ATIVA ({tempo_restante}s)"
         return "Espaço para usar a poção"
 
-    def desenhar(self, largura_tela, altura_tela, jogo_iniciado, pocao_ativa, tempo_pocao_fim, tempo_atual, vitoria, derrota, total_itens=0, renderizador_itens=None, item_exemplo=None, pontuacao_total=0, nivel_atual=1, gerenciador_recorde=None):
+    def desenhar(self, largura_tela, altura_tela, jogo_iniciado, pocao_ativa, tempo_pocao_fim, tempo_atual, vitoria, derrota, total_itens=0, renderizador_itens=None, item_exemplo=None, pontuacao_total=0, nivel_atual=1, gerenciador_recorde=None, texto_origem="", texto_destino="", campo_ativo=None):
         """Orquestra a renderização completa da interface de usuário em fluxo vertical dinâmico."""
         if vitoria or derrota:
             self.desenhar_telas_fim(largura_tela, vitoria, derrota, pontuacao_total)
@@ -73,10 +100,9 @@ class RenderizadorHud:
         self.tela.blit(texto_nivel, ((largura_tela - texto_nivel.get_width()) // 2, self._PADDING_Y))
 
         texto_pontos = self.fonte_sub.render(f"Pontos: {pontuacao_total}", True, (255, 215, 0))
-        y_pontos = y_dica + dica.get_height() + 4
+        y_pontos = y_dica + dica.get_height() + 12
         self.tela.blit(texto_pontos, (self._PADDING_X, y_pontos))
 
         y_slot = y_pontos + texto_pontos.get_height() + self._ESPAÇAMENTO_VERTICAL
         self.desenhar_item_slot(renderizador_itens, item_exemplo, total_itens, self._PADDING_X, y_slot)
-
         self.renderizador_recorde.desenhar(self.tela, gerenciador_recorde, altura_tela)
