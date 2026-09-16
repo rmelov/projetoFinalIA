@@ -3,15 +3,6 @@ from algoritmos.busca.Node import Node
 
 class buscaNP(object):
 #--------------------------------------------------------------------------
-# SUCESSORES PARA GRAFO
-#--------------------------------------------------------------------------
-    def sucessores_grafo(self,no,grafo,ordem):
-        if ordem == 1:
-            f = grafo[no]
-        else:
-            f = list(reversed(grafo[no])) 
-        return f
-#--------------------------------------------------------------------------
 # SUCESSORES PARA GRID
 #--------------------------------------------------------------------------
     def sucessores_grid(self,st,nx,ny,mapa):
@@ -47,7 +38,7 @@ class buscaNP(object):
                 f.append(suc)
         return f[::-1]
 #--------------------------------------------------------------------------    
-# EXIBE O CAMINHO ENCONTRADO NA ÁRVORE DE BUSCA (GRAFO e GRID)
+# EXIBE O CAMINHO ENCONTRADO NA ÁRVORE DE BUSCA (GRID)
 #--------------------------------------------------------------------------    
     def exibirCaminho(self,node):
         caminho = []
@@ -64,7 +55,7 @@ class buscaNP(object):
             if no.estado==valor:
                 return no
 #--------------------------------------------------------------------------    
-# EXIBE O CAMINHO ENCONTRADO NA ÁRVORE DE BUSCA - BIDIRECIONAL (GRAFO/GRID)
+# EXIBE O CAMINHO ENCONTRADO NA ÁRVORE DE BUSCA - BIDIRECIONAL (GRID)
 #--------------------------------------------------------------------------
     def exibirCaminho_bid(self,encontro,fila1,fila2):
         # nó do lado do início
@@ -79,47 +70,6 @@ class buscaNP(object):
         caminho2 = list(reversed(caminho2[:-1]))
     
         return caminho1 + caminho2
-#--------------------------------------------------------------------------
-# BUSCA EM AMPLITUDE - GRAFO
-#--------------------------------------------------------------------------
-    def amplitude_grafo(self,inicio,fim,grafo):
-        # Finaliza se início for igual a objetivo
-        if inicio == fim:
-            return [inicio]
-        
-        # Lista para árvore de busca - FILA
-        fila = deque()
-    
-        # Inclui início como nó raíz da árvore de busca
-        raiz = Node(None,inicio,0,None,None)
-        fila.append(raiz)
-    
-        # Marca início como visitado
-        visitado = {}
-        visitado[inicio] = 0
-        
-        # Executa a busca
-        while fila:
-            # Remove o primeiro da FILA
-            atual = fila.popleft()
-    
-            # Gera sucessores a partir do grafo
-            filhos = self.sucessores_grafo(atual.estado,grafo,1)
-        
-            for novo in filhos:
-                flag = True
-                if novo in visitado:
-                    if visitado[novo]<=atual.v1+1:
-                        flag = False
-                if flag:
-                    filho = Node(atual,novo,atual.v1 + 1,None,None)
-                    fila.append(filho)
-                    visitado[novo] = atual.v1 + 1
-                    
-                    # Verifica se encontrou o objetivo
-                    if novo == fim:
-                        return self.exibirCaminho(filho)
-        return None
 #--------------------------------------------------------------------------
 # BUSCA EM AMPLITUDE - GRID
 #--------------------------------------------------------------------------
@@ -167,48 +117,6 @@ class buscaNP(object):
                         return self.exibirCaminho(filho)                            
         return None
 #--------------------------------------------------------------------------
-# BUSCA EM PROFUNDIDADE - GRAFO
-#--------------------------------------------------------------------------
-    def profundidade_grafo(self, inicio, fim, grafo):
-        # Finaliza se início for igual a objetivo
-        if inicio == fim:
-            return [inicio]
-    
-        # Lista para árvore de busca - PILHA
-        pilha = deque()
-    
-        # Inclui início como nó raíz da árvore de busca
-        raiz = Node(None,inicio,0,None,None)
-        pilha.append(raiz)
-        
-        
-        # Marca início como visitado
-        visitado = {}
-        visitado[inicio] = 0
-        
-        while pilha:
-            # Remove o último da PILHA
-            atual = pilha.pop()
-    
-            # Gera sucessores a partir do grafo
-            filhos = self.sucessores_grafo(atual.estado,grafo,-1)
-            for novo in filhos:
-                flag = True
-                
-                if novo in visitado:
-                    if visitado[novo]<=atual.v1+1:
-                        flag = False
-                
-                if flag:
-                    filho = Node(atual,novo,atual.v1 + 1,None,None)
-                    pilha.append(filho)
-                    visitado[novo] = atual.v1 + 1
-                    
-                    # Verifica se encontrou o objetivo - multiobjetivo
-                    if novo == fim:
-                        return self.exibirCaminho(filho)
-        return None
-#--------------------------------------------------------------------------
 # BUSCA EM PROFUNDIDADE - GRID
 #--------------------------------------------------------------------------
     def profundidade_grid(self,inicio,fim,nx,ny,mapa):
@@ -252,47 +160,6 @@ class buscaNP(object):
                     # Verifica se encontrou o objetivo - multiobjetivo
                     if t_novo == t_fim:
                         return self.exibirCaminho(filho)
-        return None
-#--------------------------------------------------------------------------
-# BUSCA EM PROFUNDIDADE LIMITADA - GRAFO
-#--------------------------------------------------------------------------
-    def prof_limitada_grafo(self,inicio,fim,grafo,lim):
-        # Finaliza se início for igual a objetivo
-        if inicio == fim:
-            return [inicio]
-    
-        # Lista para árvore de busca - PILHA
-        pilha = deque()
-    
-        # Inclui início como nó raíz da árvore de busca
-        raiz = Node(None,inicio,0,None,None)
-        pilha.append(raiz)
-    
-        # Marca início como visitado
-        visitado = {}
-        visitado[inicio] = 0
-        
-        while pilha:
-            # Remove o último da PILHA
-            atual = pilha.pop()
-            
-            if atual.v1<lim:
-                # Gera sucessores a partir do grafo
-                filhos = self.sucessores_grafo(atual.estado,grafo,-1)
-                
-                for novo in filhos:
-                    flag = True
-                    if novo in visitado:
-                        if visitado[novo]<=atual.v1+1:
-                            flag = False
-                    if flag:
-                        filho = Node(atual,novo,atual.v1 + 1,None,None)
-                        pilha.append(filho)
-                        visitado[novo] = atual.v1 + 1
-                        
-                        # Verifica se encontrou o objetivo - multiobjetivo
-                        if novo == fim:
-                            return self.exibirCaminho(filho)
         return None
 #--------------------------------------------------------------------------
 # BUSCA EM PROFUNDIDADE LIMITADA - GRID
@@ -339,20 +206,6 @@ class buscaNP(object):
                         # Verifica se encontrou o objetivo - multiobjetivo
                         if t_novo == t_fim:
                             return self.exibirCaminho(filho)
-        return None
-#--------------------------------------------------------------------------
-# BUSCA EM APROFUNDAMENTO ITERATIVO - GRAFO
-#--------------------------------------------------------------------------
-    def aprof_iterativo_grafo(self,inicio,fim,grafo,lim_max):
-        # Finaliza se início for igual a objetivo
-        if inicio == fim:
-            return [inicio]
-        
-        for lim in range(1,lim_max):    
-            caminho = self.prof_limitada_grafo(inicio,fim,grafo,lim)
-            
-            if caminho!=None:
-                return caminho
         return None
 #--------------------------------------------------------------------------
 # BUSCA EM APROFUNDAMENTO ITERATIVO - grid
@@ -402,80 +255,6 @@ class buscaNP(object):
                                 return self.exibirCaminho(filho)
             visitado.clear()
             pilha.clear()
-        return None
-#--------------------------------------------------------------------------
-# BUSCA BIDIRECIONAL - GRAFO
-#--------------------------------------------------------------------------
-    def bidirecional_grafo(self,inicio,fim,grafo):
-        if inicio == fim:
-            return [inicio]
-
-        # Lista para árvore de busca a partir da origem - FILA
-        fila1 = deque()
-        
-        # Lista para árvore de busca a partir do destino - FILA
-        fila2 = deque()
-        
-        # Inclui início e fim como nó raíz da árvore de busca
-        raiz = Node(None,inicio,0,None,None)
-        fila1.append(raiz)
-        
-        raiz = Node(None,fim,0,None,None)
-        fila2.append(raiz)
-    
-        # Visitados mapeando estado -> Node (para reconstruir o caminho)
-        visitado1 = {}
-        visitado1[inicio] = 0
-        visitado2 = {}
-        visitado2[fim] = 0        
-        nivel = 0
-        while fila1 and fila2:
-            # ****** Executa AMPLITUDE a partir da ORIGEM *******
-            # Quantidade de nós no nível atual
-            nivel = len(fila1)  
-            for _ in range(nivel):
-                # Remove o primeiro da FILA
-                atual = fila1.popleft()
-
-                # Gera sucessores
-                filhos = self.sucessores_grafo(atual.estado, grafo, 1)
-                
-                for novo in filhos:
-                    flag = True
-                    if novo in visitado1:
-                        if visitado1[novo]<=atual.v1+1:
-                            flag = False
-                    if flag:
-                        filho = Node(atual,novo,atual.v1 + 1,None,None)
-                        fila1.append(filho)
-                        visitado1[novo] = atual.v1 + 1
-
-                        if novo in visitado2:
-                            return self.exibirCaminho_bid(novo,fila1,fila2)
-            
-            # ****** Executa AMPLITUDE a partir do OBJETIVO *******
-            # Quantidade de nós no nível atual
-            nivel = len(fila2)  
-            for _ in range(nivel):
-                # Remove o primeiro da FILA
-                atual = fila2.popleft()
-
-                # Gera sucessores
-                filhos = self.sucessores_grafo(atual.estado, grafo, 1)
-                            
-                for novo in filhos:
-                    flag = True
-                    if novo in visitado2:
-                        if visitado2[novo]<=atual.v1+1:
-                            flag = False
-                    if flag:
-                        filho = Node(atual,novo,atual.v1 + 1,None,None)
-                        fila2.append(filho)
-                        visitado2[novo] = atual.v1 + 1
-                        
-                        if novo in visitado1:
-                            return self.exibirCaminho_bid(novo,fila1,fila2)
-                        
         return None
 #--------------------------------------------------------------------------
 # BUSCA BIDIRECIONAL - GRID

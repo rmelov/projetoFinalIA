@@ -1,17 +1,6 @@
 import numpy as np  
 import random as rd
 #-----------------------------------------------------------------------------
-# IMPORTA O GRAFO DE ARQUIVO TEXTO
-#-----------------------------------------------------------------------------
-def Gera_Problema_Grafo_NP(arquivo):
-    f = open(arquivo,"r",encoding="utf-8")
-    grafo = {}
-    for str1 in f:
-        str1 = str1.strip("\n")
-        str1 = str1.split(",")
-        grafo[str1[0]] = str1[1:]
-    return grafo
-#-----------------------------------------------------------------------------
 # GERA GRID ALEATÓRIO
 #-----------------------------------------------------------------------------
 def Gera_Problema_Grid_Ale(nx,ny,qtd):
@@ -45,24 +34,6 @@ def imprimeCaminho(texto,caminho,custo):
     print("Caminho: ",caminho)
     print("Custo..: ",len(caminho)-1)
 
-#--------------------------------------------------------------------------
-# IMPORTA DADOS DO ARQUIVO
-#--------------------------------------------------------------------------
-def Gerar_Problema_Grafo_P(arq):
-    grafo = {}
-    with open(arq,"r") as f:
-        for dados in f:
-            dados = dados.strip()
-            dados = dados.split(",")
-            aux1 = []
-            for i in range (1,len(dados),2):
-                aux=[]
-                aux.append(dados[i])
-                aux.append(int(dados[i+1]))
-                aux1.append(aux)
-            grafo[dados[0]] = aux1
-        
-    return grafo
 #-----------------------------------------------------------------------------
 # GERA GRID ALEATÓRIO
 #-----------------------------------------------------------------------------
