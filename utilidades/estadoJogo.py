@@ -1,4 +1,5 @@
 import random
+import re
 from componentes.geradorLabirinto import gerar_labirinto_base
 from componentes.entidades.oponentes.perseguidor import Perseguidor
 from componentes.inventario import Inventario
@@ -20,6 +21,10 @@ class EstadoJogo:
         self.pos_saida = ()
         self.inimigo = None
         self.rastro_inimigo = set()
+        self.posicao_origem_customizada = None
+        self.posicao_destino_customizada = None
+        self.texto_origem_customizada = ""
+        self.texto_destino_customizada = ""
         
         self.inventario_geral = Inventario()
         self.inventario_partida = InventarioPartida()
@@ -69,6 +74,60 @@ class EstadoJogo:
         self.pocao.ativa = False
         self.pocao.tempo_fim = 0
         self._preparar_novo_labirinto(resetar_total=True)
+
+    @staticmethod
+    def _parse_coordenada(texto):
+        texto = str(texto or "").strip()
+        if not texto:
+            return None
+        numeros = re.findall(r"-?\d+", texto)
+        if len(numeros) < 2:
+            return None
+        return (int(numeros[0]), int(numeros[1]))
+
+    def definir_coordenadas_personalizadas(self, texto_origem="", texto_destino=""):
+        self.texto_origem_customizada = str(texto_origem or "")
+        self.texto_destino_customizada = str(texto_destino or "")
+        self.posicao_origem_customizada = self._parse_coordenada(self.texto_origem_customizada)
+        self.posicao_destino_customizada = self._parse_coordenada(self.texto_destino_customizada)
+
+    def _aplicar_coordenadas_personalizadas(self, linhas, colunas):
+        origem = self.posicao_origem_customizada
+        destino = self.posicao_destino_customizada
+
+        if origem is not None:
+            if not (0 <= origem[0] < linhas and 0 <= origem[1] < colunas):
+                origem = None
+        if destino is not None:
+            if not (0 <= destino[0] < linhas and 0 <= destino[1] < colunas):
+                destino = None
+
+        if origem is not None and destino is not None and origem == destino:
+            destino = None
+
+        if origem is not None:
+            self.mapa[origem[0]][origem[1]] = 0
+            self.pos_jogador = [origem[0], origem[1]]
+        else:
+            self.pos_jogador = [1, 1]
+
+        if destino is not None:
+            self.mapa[destino[0]][destino[1]] = 0
+            self.pos_saida = (destino[0], destino[1])
+        else:
+            self.pos_saida = (linhas - 2, colunas - 2)
+
+        if tuple(self.pos_jogador) == self.pos_saida:
+            for r in range(linhas):
+                for c in range(colunas):
+                    if (r, c) != tuple(self.pos_jogador) and self.mapa[r][c] == 0:
+                        self.pos_saida = (r, c)
+                        break
+                if tuple(self.pos_jogador) != self.pos_saida:
+                    break
+
+        self.mapa[self.pos_saida[0]][self.pos_saida[1]] = 0
+        self.saida_obj.posicao = self.pos_saida
 
     def avancar_proximo_labirinto(self):
         itens_ganhos = self.inventario_partida.resgatar_itens()
@@ -121,6 +180,7 @@ class EstadoJogo:
             self.mapa[self.pos_saida[0]][self.pos_saida[1]] = 0
             self.rastro_inimigo = {tuple(self.inimigo.posicao)}
 
+        self._aplicar_coordenadas_personalizadas(linhas_atuais, colunas_atuais)
         self.inimigo.ajustar_velocidade(self.indice_nivel)
         self.saida_obj.posicao = self.pos_saida
         self.pocao = PocaoCoragem(quantidade_inicial=0)

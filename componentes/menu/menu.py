@@ -16,6 +16,10 @@ class MenuPrincipal:
         
         self.opcoes_principal = ["JOGAR", "TUTORIAL", "SOBRE", "SAIR"]
         self.indice_selecionado = 0
+        self.input_origem = ""
+        self.input_destino = ""
+        self.input_ativo = None
+        self.ret_btn_jogar = None
 
         try:
             self.fonte_titulo = pygame.font.Font(config.FONTE_CAMINHO, config.TAMANHO_FONTE_PRINCIPAL)
@@ -236,8 +240,8 @@ class MenuPrincipal:
 
     def _iniciar_jogo_com_campos(self):
         # Transfere os campos para o gerenciador de jogo e inicia
-        self.gerenciador_jogo.texto_origem = getattr(self, 'input_origem', '')
-        self.gerenciador_jogo.texto_destino = getattr(self, 'input_destino', '')
+        self.gerenciador_jogo.texto_origem = getattr(self, 'input_origem', '') or ""
+        self.gerenciador_jogo.texto_destino = getattr(self, 'input_destino', '') or ""
         self.gerenciador_jogo.campo_ativo = None
         self.gerenciador_jogo.executar(modo_jogo=self.modo_selecionado)
         self.estado_atual = 'principal'

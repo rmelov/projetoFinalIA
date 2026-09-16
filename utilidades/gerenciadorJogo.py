@@ -12,16 +12,21 @@ class GerenciadorJogo:
         self.renderizador = renderizador
         self.renderizador_itens = RenderizadorItens(tela, renderizador.conversor)
         self.renderizador_rota_saida = RenderizadorRotaSaida(renderizador.conversor)
+        self.texto_origem = ""
+        self.texto_destino = ""
         self.jogo = EstadoJogo(renderizador.conversor, modo_jogo=modo_jogo)
         self.relogio = pygame.time.Clock()
 
     def definir_modo_jogo(self, modo_jogo):
         """Reinicia o estado do jogo injetando o novo modo selecionado."""
         self.jogo = EstadoJogo(self.renderizador.conversor, modo_jogo=modo_jogo)
+        self.jogo.definir_coordenadas_personalizadas(self.texto_origem, self.texto_destino)
 
     def executar(self, modo_jogo=None):
         if modo_jogo:
             self.definir_modo_jogo(modo_jogo)
+        else:
+            self.jogo.definir_coordenadas_personalizadas(self.texto_origem, self.texto_destino)
 
         self.jogo.reiniciar()
         self._atualizar_centralizacao_isometrica()
