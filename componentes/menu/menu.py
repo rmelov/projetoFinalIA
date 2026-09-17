@@ -159,11 +159,23 @@ class MenuPrincipal:
         rect_titulo = txt_titulo.get_rect(center=(config.LARGURA // 2, config.ALTURA // 4))
         self.tela.blit(txt_titulo, rect_titulo)
 
-        txt_info = self.fonte_texto.render("Use WASD/Setas para mover. Fuja do Inimigo!", True, (200, 200, 200))
-        rect_info = txt_info.get_rect(center=(config.LARGURA // 2, config.ALTURA // 2))
-        self.tela.blit(txt_info, rect_info)
+        linhas = [
+            "Você é o explorador do labirinto.",
+            "O inimigo é o perseguidor: ele te observa e tenta alcançar você.",
+            "Seu objetivo é encontrar a saída do labirinto.",
+            "Pegue poções de coragem para ganhar velocidade e fugir por um tempo.",
+            "Use WASD ou as setas para se mover. Pressione R para reiniciar e ESC para voltar.",
+            "Cuidado com o rastro do inimigo e ache a saída do labirinto!"
+        ]
 
-        self.ret_voltar = self._desenhar_botao("VOLTAR", config.ALTURA // 2 + 100)
+        inicio_y = config.ALTURA // 2 - 90
+        espaco_entre_linhas = 34
+        for i, texto in enumerate(linhas):
+            superficie = self.fonte_texto.render(texto, True, (220, 220, 220))
+            rect = superficie.get_rect(center=(config.LARGURA // 2, inicio_y + i * espaco_entre_linhas))
+            self.tela.blit(superficie, rect)
+
+        self.ret_voltar = self._desenhar_botao("VOLTAR", config.ALTURA // 2 + 140)
 
     def _desenhar_sobre(self):
         txt_titulo = self.fonte_titulo.render("SOBRE", True, (255, 105, 180))
