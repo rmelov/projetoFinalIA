@@ -85,6 +85,30 @@ class EstadoJogo:
             return None
         return (int(numeros[0]), int(numeros[1]))
 
+    def validar_coordenadas_personalizadas(self, texto_origem="", texto_destino="", linhas=None, colunas=None):
+        if linhas is None or colunas is None:
+            try:
+                linhas, colunas = self._obter_dimensoes_atuais()
+            except Exception:
+                linhas = colunas = config.TAMANHO_GRID
+
+        origem = self._parse_coordenada(texto_origem)
+        destino = self._parse_coordenada(texto_destino)
+
+        if texto_origem and texto_origem.strip() and origem is None:
+            return False, "Origem inválida. Use o formato (x,y)."
+        if texto_destino and texto_destino.strip() and destino is None:
+            return False, "Destino inválido. Use o formato (x,y)."
+
+        if origem is not None and not (0 <= origem[0] < linhas and 0 <= origem[1] < colunas):
+            return False, f"Origem fora do grid ({linhas}x{colunas})."
+        if destino is not None and not (0 <= destino[0] < linhas and 0 <= destino[1] < colunas):
+            return False, f"Destino fora do grid ({linhas}x{colunas})."
+        if origem is not None and destino is not None and origem == destino:
+            return False, "Origem e destino não podem ser iguais."
+
+        return True, ""
+
     def definir_coordenadas_personalizadas(self, texto_origem="", texto_destino=""):
         self.texto_origem_customizada = str(texto_origem or "")
         self.texto_destino_customizada = str(texto_destino or "")

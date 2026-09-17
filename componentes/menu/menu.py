@@ -20,6 +20,7 @@ class MenuPrincipal:
         self.input_destino = ""
         self.input_ativo = None
         self.ret_btn_jogar = None
+        self.mensagem_erro = ""
 
         try:
             self.fonte_titulo = pygame.font.Font(config.FONTE_CAMINHO, config.TAMANHO_FONTE_PRINCIPAL)
@@ -32,6 +33,20 @@ class MenuPrincipal:
             self.fonte_hover = pygame.font.Font(config.FONTE_CAMINHO, int(config.TAMANHO_FONTE_SUB * 1.25))
         except Exception:
             self.fonte_hover = pygame.font.SysFont("arial", int(config.TAMANHO_FONTE_SUB * 1.25))
+
+    def _validar_campos_configuracao(self):
+        try:
+            linhas, colunas = self.gerenciador_jogo.jogo._obter_dimensoes_atuais()
+        except Exception:
+            linhas = colunas = config.TAMANHO_GRID
+
+        valido, mensagem = self.gerenciador_jogo.jogo.validar_coordenadas_personalizadas(
+            self.input_origem,
+            self.input_destino,
+            linhas,
+            colunas,
+        )
+        return valido, mensagem
 
     def executar(self):
         relogio = pygame.time.Clock()
@@ -55,6 +70,7 @@ class MenuPrincipal:
                     self.input_destino = ""
                     self.input_ativo = None
                     self.ret_btn_jogar = None
+                    self.mensagem_erro = ""
             elif self.estado_atual == "tutorial":
                 self._desenhar_tutorial()
             elif self.estado_atual == "sobre":
@@ -163,7 +179,7 @@ class MenuPrincipal:
     def _desenhar_configurar_campos(self):
         # Caixa de diálogo central para inserir origem e destino
         largura = 860
-        altura = 320
+        altura = 350
         x = (config.LARGURA - largura) // 2
         y = (config.ALTURA - altura) // 2
 
@@ -205,7 +221,14 @@ class MenuPrincipal:
         mouse_pos = pygame.mouse.get_pos()
         btn_base = self.fonte_titulo.render("JOGAR", True, (255, 255, 255))
         btn_hover = self.fonte_titulo.render("JOGAR", True, (255, 235, 59))
-        btn_y = destino_rect.y + destino_rect.h + 90
+
+        if self.mensagem_erro:
+            mensagem = self.fonte_texto.render(self.mensagem_erro, True, (255, 100, 100))
+            mensagem_y = destino_rect.y + destino_rect.h + 20
+            fundo.blit(mensagem, (20, mensagem_y))
+            btn_y = mensagem_y + mensagem.get_height() + 26
+        else:
+            btn_y = destino_rect.y + destino_rect.h + 90
 
         btn_rect_tela = btn_base.get_rect(center=(x + largura // 2, y + btn_y))
         if btn_rect_tela.collidepoint(mouse_pos):
@@ -239,6 +262,12 @@ class MenuPrincipal:
             self.input_ativo = None
 
     def _iniciar_jogo_com_campos(self):
+        valido, mensagem = self._validar_campos_configuracao()
+        if not valido:
+            self.mensagem_erro = mensagem
+            return
+
+        self.mensagem_erro = ""
         # Transfere os campos para o gerenciador de jogo e inicia
         self.gerenciador_jogo.texto_origem = getattr(self, 'input_origem', '') or ""
         self.gerenciador_jogo.texto_destino = getattr(self, 'input_destino', '') or ""
