@@ -167,11 +167,13 @@ class EstadoJogo:
         tamanho = self.sistema_nivel.calcular_tamanho_grid(self.indice_nivel)
         return tamanho, tamanho
 
-    def _preparar_novo_labirinto(self, resetar_total=True):
+    def _preparar_novo_labirinto(self, resetar_total=True, preservar_jogador=False):
         linhas_atuais, colunas_atuais = self._obter_dimensoes_atuais()
         pocao_ativa_anterior = self.pocao.ativa
         tempo_fim_anterior = self.pocao.tempo_fim
         frascos_atuais = self.pocao.frascos
+
+        pos_jog_atual = list(self.pos_jogador) if (preservar_jogador and self.pos_jogador) else None
 
         if resetar_total or not self.pos_jogador or not self.inimigo:
             self.mapa, pos_jog_tup, pos_inim_tup, self.pos_saida = gerar_labirinto_base(linhas_atuais, colunas_atuais)
@@ -184,14 +186,13 @@ class EstadoJogo:
             self.ultimo_movimento_ia = pygame.time.get_ticks()
             self.ultimo_passo_jogador = pygame.time.get_ticks()
         else:
-            pos_jog_atual = tuple(self.pos_jogador)
             pos_inim_atual = tuple(self.inimigo.posicao)
             
             self.mapa, _, _, self.pos_saida = gerar_labirinto_base(linhas_atuais, colunas_atuais)
             
-            if pos_jog_atual[0] < linhas_atuais and pos_jog_atual[1] < colunas_atuais:
+            if pos_jog_atual and pos_jog_atual[0] < linhas_atuais and pos_jog_atual[1] < colunas_atuais:
                 self.mapa[pos_jog_atual[0]][pos_jog_atual[1]] = 0
-                self.pos_jogador = list(pos_jog_atual)
+                self.pos_jogador = pos_jog_atual
             else:
                 self.pos_jogador = [1, 1]
 
@@ -204,7 +205,9 @@ class EstadoJogo:
             self.mapa[self.pos_saida[0]][self.pos_saida[1]] = 0
             self.rastro_inimigo = {tuple(self.inimigo.posicao)}
 
-        self._aplicar_coordenadas_personalizadas(linhas_atuais, colunas_atuais)
+        if not preservar_jogador:
+            self._aplicar_coordenadas_personalizadas(linhas_atuais, colunas_atuais)
+        
         self.inimigo.ajustar_velocidade(self.indice_nivel)
         self.saida_obj.posicao = self.pos_saida
         self.pocao = PocaoCoragem(quantidade_inicial=0)
@@ -238,7 +241,7 @@ class EstadoJogo:
         if self.gerenciador_textos:
             self.gerenciador_textos.adicionar(f"+{ganho}", self.pos_jogador[0], self.pos_jogador[1], (255, 215, 0))
         
-        self._preparar_novo_labirinto(resetar_total=False)
+        self._preparar_novo_labirinto(resetar_total=False, preservar_jogador=True)
         self.tempo_congelamento_inimigo = tempo_atual + 2000
         self.rastro_inimigo.clear()
         self.rastro_inimigo.add(tuple(self.inimigo.posicao))
@@ -304,7 +307,7 @@ class EstadoJogo:
                 pos_inimigo_tup = tuple(self.inimigo.posicao)
                 
                 if self.vortex.posicao and pos_inimigo_tup == self.vortex.posicao:
-                    self._preparar_novo_labirinto(resetar_total=False)
+                    self._preparar_novo_labirinto(resetar_total=False, preservar_jogador=True)
                     self.tempo_congelamento_inimigo = tempo_atual + 2000
                     self.rastro_inimigo.clear()
                     self.rastro_inimigo.add(tuple(self.inimigo.posicao))

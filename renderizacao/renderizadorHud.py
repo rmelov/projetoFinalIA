@@ -16,10 +16,8 @@ class RenderizadorHud:
 
     def calcular_posicoes_campos(self, largura_tela, altura_tela, fonte_sub, padding_x, padding_y, espacamento_vertical):
         """Calcula e retorna as posições dos retângulos dos campos de entrada."""
-        # Simular o cálculo do método desenhar para obter as posições
-        y_slot = 0  # Vamos calcular step by step
+        y_slot = 0
         
-        # Simulação das posições do HUD
         y_dica = padding_y + fonte_sub.get_height() + 6
         texto_nivel = fonte_sub.render(f"Nível: 1", True, (255, 200, 100))
         y_pontos = y_dica + texto_nivel.get_height() + 4

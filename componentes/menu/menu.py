@@ -64,7 +64,6 @@ class MenuPrincipal:
                     self.estado_atual = "principal"
                 elif resultado_modo in ["amplitude", "profundidade", "prof_limitada", "aprofundamento_iterativo", "bidirecional"]:
                     self.modo_selecionado = resultado_modo
-                    # Após escolher modo, abrir diálogo para origem/destino antes de iniciar
                     self.estado_atual = "configurar_campos"
                     self.input_origem = ""
                     self.input_destino = ""
@@ -98,9 +97,7 @@ class MenuPrincipal:
                         if Controles.confirmar_menu(evento) or evento.key in (pygame.K_RETURN, pygame.K_SPACE):
                             self.estado_atual = "principal"
                     elif self.estado_atual == "configurar_campos":
-                        # Tratamento de digitação nos campos do diálogo
                         if evento.key == pygame.K_RETURN and self.input_ativo is None:
-                            # Enter sem campo ativo: tentar iniciar jogo
                             self._iniciar_jogo_com_campos()
                         elif evento.key == pygame.K_ESCAPE:
                             self.estado_atual = "principal"
@@ -118,7 +115,6 @@ class MenuPrincipal:
                                     self.input_destino += tecla_texto
                 elif evento.type == pygame.MOUSEBUTTONDOWN:
                     if evento.button == 1:
-                        # Em tela de configuração, tratar cliques especiais
                         if self.estado_atual == "configurar_campos":
                             self._tratar_clique_config(evento.pos)
                         else:
@@ -189,7 +185,6 @@ class MenuPrincipal:
         self.ret_voltar = self._desenhar_botao("VOLTAR", config.ALTURA // 2 + 100)
 
     def _desenhar_configurar_campos(self):
-        # Caixa de diálogo central para inserir origem e destino
         largura = 860
         altura = 350
         x = (config.LARGURA - largura) // 2
@@ -208,7 +203,6 @@ class MenuPrincipal:
         linha_altura = self.fonte_texto.get_height()
         altura_campo = 36
 
-        # Origem (label e caixa na mesma linha)
         label_ori = self.fonte_texto.render("Origem:", True, (255, 255, 255))
         fundo.blit(label_ori, (pad_x, current_y + 30 + (altura_campo - linha_altura) // 2))
         origem_rect = pygame.Rect(pad_x + label_largura + 20, current_y + 15, 360, altura_campo)
@@ -220,7 +214,6 @@ class MenuPrincipal:
 
         current_y = origem_rect.y + origem_rect.h + 24
 
-        # Destino (label e caixa na mesma linha)
         label_dest = self.fonte_texto.render("Destino:", True, (255, 255, 255))
         fundo.blit(label_dest, (pad_x, current_y + 30 + (altura_campo - linha_altura) // 2))
         destino_rect = pygame.Rect(pad_x + label_largura + 20, current_y + 15, 360, altura_campo)
@@ -260,7 +253,6 @@ class MenuPrincipal:
         self.tela.blit(fundo, (x, y))
 
     def _tratar_clique_config(self, pos):
-        # Checa se clique foi em algum campo ou botão do diálogo
         if not hasattr(self, '_config_dialog_rects'):
             return
         if self._config_dialog_rects['origem'].collidepoint(pos):
@@ -270,7 +262,6 @@ class MenuPrincipal:
         elif self._config_dialog_rects['jogar'].collidepoint(pos):
             self._iniciar_jogo_com_campos()
         else:
-            # clique fora: desativar campo
             self.input_ativo = None
 
     def _iniciar_jogo_com_campos(self):
@@ -280,7 +271,6 @@ class MenuPrincipal:
             return
 
         self.mensagem_erro = ""
-        # Transfere os campos para o gerenciador de jogo e inicia
         self.gerenciador_jogo.texto_origem = getattr(self, 'input_origem', '') or ""
         self.gerenciador_jogo.texto_destino = getattr(self, 'input_destino', '') or ""
         self.gerenciador_jogo.campo_ativo = None
