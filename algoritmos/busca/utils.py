@@ -61,7 +61,6 @@ def Gerar_Problema_Grafo_P(arq):
                 aux.append(int(dados[i+1]))
                 aux1.append(aux)
             grafo[dados[0]] = aux1
-        
     return grafo
 #-----------------------------------------------------------------------------
 # GERA GRID ALEATÓRIO

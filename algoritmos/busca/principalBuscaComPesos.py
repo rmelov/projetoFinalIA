@@ -1,7 +1,7 @@
-import F_auxiliares as fa
+import utils as fa
 import sys
 from os import system       
-from algoritmos.busca.BuscaP import buscaP   
+from BuscaP import buscaP   
 #--------------------------------------------------------------------------
 # MÓDULO PRINCIPAL
 #--------------------------------------------------------------------------
@@ -14,11 +14,13 @@ while(True):
     op = input("Sua opção:")
     
     if(op=='1'):
-        nos, grafo = fa.Gerar_Problema_Grafo_P("Grafo_Prova.txt")
+        grafo = fa.Gerar_Problema_Grafo_P("Grafo_Prova.txt")
+        for no in grafo:
+            print(no, end=' ')
         origem  = input("\nOrigem......: ").upper()
         destino = input("Destino.....: ").upper()
-        flag_origem  = origem in nos
-        flag_destino = destino in nos
+        flag_origem  = origem in grafo
+        flag_destino = destino in grafo
         flag = flag_origem and flag_destino
         flag_grafo = True
         #------------------------------------------------------------
@@ -45,29 +47,29 @@ while(True):
         system("cls")
         sol = buscaP()
         if flag_grafo:
-            caminho, custo = sol.custo_uniforme_grafo(origem,destino,nos,grafo)
+            caminho, custo = sol.custo_uniforme_grafo(origem,destino,grafo)
         else:
             caminho, custo = sol.custo_uniforme_grid(origem,destino,mapa,dx,dy)
         if caminho!=None:
             print("*** CUSTO UNIFORME ****")
-            #print("Caminho...: ",caminho)
-            #print("Custo.....:",custo)
+            print("Caminho...: ",caminho)
+            print("Custo.....:",custo)
         else:
             print("Caminho não encontrado")
         
         if flag_grafo:
-            caminho, custo = sol.greedy_grafo(origem,destino,nos,grafo)
+            caminho, custo = sol.greedy_grafo(origem,destino,grafo)
         else:
             caminho, custo = sol.greedy_grid(origem,destino,mapa,dx,dy)
         if caminho!=None:
             print("\n*** GREEDY ****")
-            #print("Caminho...: ",caminho)
-            #print("Custo.....:",custo)
+            print("Caminho...: ",caminho)
+            print("Custo.....:",custo)
         else:
             print("Caminho não encontrado")
         
         if flag_grafo:
-            caminho, custo = sol.a_estrela_grafo(origem,destino,nos,grafo)
+            caminho, custo = sol.a_estrela_grafo(origem,destino,grafo)
         else:
             caminho, custo = sol.a_estrela_grid(origem,destino,mapa,dx,dy)
         if caminho!=None:
@@ -76,15 +78,15 @@ while(True):
             print("Custo.....:",custo)
         else:
             print("Caminho não encontrado")
-        
+   
         if flag_grafo:
-            caminho, custo = sol.aia_estrela_grafo(origem,destino,nos,grafo)
+            caminho, custo = sol.aia_estrela_grafo(origem,destino,grafo)
         else:
             caminho, custo = sol.aia_estrela_grid(origem,destino,mapa,dx,dy)
         if caminho!=None:
             print("\n*** AIA ESTRELA ****")
-            #print("Caminho...: ",caminho)
-            #print("Custo.....:",custo)
+            print("Caminho...: ",caminho)
+            print("Custo.....:",custo)
         else:
             print("Caminho não encontrado")
         input("\nPressione ENTER para continuar.")

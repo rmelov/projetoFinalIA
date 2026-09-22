@@ -1,17 +1,13 @@
 from collections import deque
-from algoritmos.busca.NodeP import NodeP
+from NodeP import NodeP
 from math import sqrt, fabs
 
 class buscaP(object):
 #--------------------------------------------------------------------------
 # SUCESSORES PARA GRAFO
 #--------------------------------------------------------------------------
-    def sucessores_grafo(self,ind,grafo,ordem):
-        
-        f = []
-        for suc in grafo[ind][::ordem]:
-            f.append(suc)
-        return f
+    def sucessores_grafo(self,no,grafo):
+        return grafo[no]
 #--------------------------------------------------------------------------
 # SUCESSORES PARA GRID
 #--------------------------------------------------------------------------
@@ -87,7 +83,7 @@ class buscaP(object):
 #--------------------------------------------------------------------------    
 # GERA H DE FORMA ALEATÓRIAv - GRAFO
 #--------------------------------------------------------------------------    
-    def heuristica_grafo(self,nos,n,destino):
+    def heuristica_grafo(self,n,destino,grafo):
         h = [
              [ 0,97,59,99,53,71,66,72,91,70,74,58,62,88,70,77,67,50,93,70],
              [70, 0,80,70,62,80,97,87,10,64,57,67,72,96,72,86,84,76,54,98],
@@ -110,8 +106,8 @@ class buscaP(object):
              [51,93,10,96,57,83,50,55,59,79,81,71,76,56,93,70,93,78, 0,76],
              [45,41,39,36,34,31,29,27,25,22,20,18,16,14,12,10, 8, 6, 3, 0]
              ]
-        i_n = nos.index(n)
-        i_destino = nos.index(destino)
+        i_destino = list(grafo.keys()).index(destino)
+        i_n = list(grafo.keys()).index(n)
         return h[i_destino][i_n]     
 #--------------------------------------------------------------------------    
 # GERA H - GRID
@@ -174,7 +170,7 @@ class buscaP(object):
 # -----------------------------------------------------------------------------
 # CUSTO UNIFORME - GRAFO
 # -----------------------------------------------------------------------------
-    def custo_uniforme_grafo(self,inicio,fim,nos,grafo):
+    def custo_uniforme_grafo(self,inicio,fim,grafo):
         # Origem igual a destino
         if inicio == fim:
             return [inicio], 0
@@ -198,8 +194,7 @@ class buscaP(object):
                 return self.exibirCaminho(atual), atual.v2
     
             # Gera sucessores - grafo
-            ind = nos.index(atual.estado)
-            filhos = self.sucessores_grafo(ind, grafo, 1)
+            filhos = self.sucessores_grafo(atual.estado,grafo)
             
             for novo in filhos:
                 # custo acumulado até o sucessor
@@ -257,7 +252,7 @@ class buscaP(object):
 # -----------------------------------------------------------------------------
 # GREEDY - GRID
 # -----------------------------------------------------------------------------
-    def greedy_grafo(self,inicio,fim,nos,grafo):
+    def greedy_grafo(self,inicio,fim,grafo):
         # Origem igual a destino
         if inicio == fim:
             return [inicio], 0
@@ -281,13 +276,12 @@ class buscaP(object):
                 return self.exibirCaminho(atual), atual.v2
     
             # Gera sucessores
-            ind = nos.index(atual.estado)
-            filhos = self.sucessores_grafo(ind, grafo, 1)
+            filhos = self.sucessores_grafo(atual.estado,grafo)
     
             for novo in filhos:
                 # custo acumulado até o sucessor
                 v2 = valor_atual + novo[1]
-                v1 = self.heuristica_grafo(nos,novo[0],fim)  
+                v1 = self.heuristica_grafo(novo[0],fim,grafo)  
     
                 # Não visitado ou custo melhor
                 if (novo[0] not in visitado) or (v2 < visitado[novo[0]].v2):
@@ -324,7 +318,6 @@ class buscaP(object):
             
             # Gera sucessores
             filhos = self.sucessores_grid(atual.estado,nx,ny,mapa)
-            str1 = []
             for novo in filhos:
                 # custo acumulado até o sucessor
                 v2 = valor_atual + novo[1]
@@ -336,15 +329,11 @@ class buscaP(object):
                     filho = NodeP(atual,t_novo, v1, None, None, v2)
                     visitado[t_novo] = filho
                     self.inserir_ordenado(lista, filho)
-                    str1.append(novo[0])
-                    str1.append(int(novo[1]))
-                    str1.append(int(v1))
-            print(atual.estado,str1)
         return None
 # -----------------------------------------------------------------------------
 # AIA ESTRELA - GRAFO
 # -----------------------------------------------------------------------------
-    def a_estrela_grafo(self,inicio,fim,nos,grafo):
+    def a_estrela_grafo(self,inicio,fim,grafo):
         # Origem igual a destino
         if inicio == fim:
             return [inicio], 0
@@ -368,24 +357,18 @@ class buscaP(object):
                 return self.exibirCaminho(atual), atual.v2
     
             # Gera sucessores
-            ind = nos.index(atual.estado)
-            str1 = []
-            filhos = self.sucessores_grafo(ind, grafo, 1)
+            filhos = self.sucessores_grafo(atual.estado,grafo)
     
             for novo in filhos:
                 # custo acumulado até o sucessor
                 v2 = valor_atual + novo[1]
-                v1 = v2 + self.heuristica_grafo(nos,novo[0],fim)  
+                v1 = v2 + self.heuristica_grafo(novo[0],fim,grafo)
     
                 # Não visitado ou custo melhor
                 if (novo[0] not in visitado) or (v2 < visitado[novo[0]].v2):
                     filho = NodeP(atual, novo[0], v1, None, None, v2)
                     visitado[novo[0]] = filho
                     self.inserir_ordenado(lista, filho)
-                    str1.append(novo[0])
-                    str1.append(int(novo[1]))
-                    str1.append(int(v1))
-            print(atual.estado,str1)
         return None
 # -----------------------------------------------------------------------------
 # AIA ESTRELA- GRID
@@ -442,8 +425,8 @@ class buscaP(object):
 # -----------------------------------------------------------------------------
 # A ESTRELA - GRAFO
 # -----------------------------------------------------------------------------
-    def aia_estrela_grafo(self,inicio,fim,nos,grafo):
-        lim = self.heuristica_grafo(nos,inicio,fim)
+    def aia_estrela_grafo(self,inicio,fim,grafo):
+        lim = self.heuristica_grafo(inicio,fim,grafo)
         # Origem igual a destino
         if inicio == fim:
             return [inicio], 0
@@ -469,13 +452,12 @@ class buscaP(object):
                     return self.exibirCaminho(atual), atual.v2
         
                 # Gera sucessores
-                ind = nos.index(atual.estado)
-                filhos = self.sucessores_grafo(ind, grafo, 1)
+                filhos = self.sucessores_grafo(atual.estado,grafo)
         
                 for novo in filhos:
                     # custo acumulado até o sucessor
                     v2 = valor_atual + novo[1]
-                    v1 = v2 + self.heuristica_grafo(nos,novo[0],fim)
+                    v1 = v2 + self.heuristica_grafo(novo[0],fim,grafo)  
                     
                     if v1<=lim:
                         # Não visitado ou custo melhor
