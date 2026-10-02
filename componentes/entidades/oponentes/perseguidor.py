@@ -1,10 +1,12 @@
 from algoritmos.busca.buscaNP import buscaNP
+from utilidades.adaptadorBusca import AdaptadorBusca
 from utilidades import config
 
 class Perseguidor:
     def __init__(self, pos_inicial, modo="amplitude"):
         self.posicao = list(pos_inicial)
         self.buscador = buscaNP()
+        self.adaptador = AdaptadorBusca()
         self.caminho_atual = []
         self.tempo_movimento_ia = config.TEMPO_MOVIMENTO_IA
         self.modo = modo
@@ -16,33 +18,33 @@ class Perseguidor:
 
     def atualizar_caminho(self, posicao_jogador, nx, ny, mapa):
         """Recalcula a rota até o jogador usando o algoritmo correspondente ao modo escolhido."""
+        origem = list(self.posicao)
+        destino = list(posicao_jogador)
+
         resultado = None
+        try:
+            resultado = self.adaptador.encontrar_rota(self.modo, origem, destino, mapa, nx, ny)
+        except Exception:
+            resultado = None
 
-        if self.modo == "profundidade":
-            if hasattr(self.buscador, "profundidade_grid"):
-                resultado = self.buscador.profundidade_grid(self.posicao, posicao_jogador, nx, ny, mapa)
-        elif self.modo == "prof_limitada":
-            if hasattr(self.buscador, "profundidade_limitada_grid"):
-                resultado = self.buscador.profundidade_limitada_grid(self.posicao, posicao_jogador, nx, ny, mapa, limite=50)
-            else:
-                resultado = self.buscador.amplitude_grid(self.posicao, posicao_jogador, nx, ny, mapa)
-        elif self.modo == "aprofundamento_iterativo":
-            if hasattr(self.buscador, "aprofundamento_iterativo_grid"):
-                resultado = self.buscador.aprofundamento_iterativo_grid(self.posicao, posicao_jogador, nx, ny, mapa)
-            else:
-                resultado = self.buscador.amplitude_grid(self.posicao, posicao_jogador, nx, ny, mapa)
-        elif self.modo == "amplitude":
-            resultado = self.buscador.amplitude_grid(self.posicao, posicao_jogador, nx, ny, mapa)
-        elif self.modo == "bidirecional":
-            if hasattr(self.buscador, "bidirecional_grid"):
-                resultado = self.buscador.bidirecional_grid(self.posicao, posicao_jogador, nx, ny, mapa)
-            else:
-                resultado = self.buscador.amplitude_grid(self.posicao, posicao_jogador, nx, ny, mapa)
+        if resultado is None:
+            resultado = self.buscador.amplitude_grid(origem, destino, nx, ny, mapa)
+
+        if isinstance(resultado, tuple):
+            rota = resultado[0] if resultado and resultado[0] else []
         else:
-            resultado = self.buscador.amplitude_grid(self.posicao, posicao_jogador, nx, ny, mapa)
+            rota = resultado or []
 
-        if resultado and len(resultado) > 1:
-            self.caminho_atual = resultado[1:]
+        if len(rota) <= 1:
+            rota = self.buscador.amplitude_grid(origem, destino, nx, ny, mapa) or []
+
+        if isinstance(rota, tuple):
+            rota = rota[0] if rota else []
+
+        if len(rota) > 1:
+            self.caminho_atual = rota[1:]
+        else:
+            self.caminho_atual = []
 
     def mover(self):
         """Avança um passo ao longo do caminho calculado."""

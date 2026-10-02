@@ -62,7 +62,17 @@ class MenuPrincipal:
                 resultado_modo = self.menu_modos.executar()
                 if resultado_modo == "voltar":
                     self.estado_atual = "principal"
-                elif resultado_modo in ["amplitude", "profundidade", "prof_limitada", "aprofundamento_iterativo", "bidirecional"]:
+                elif resultado_modo in [
+                    "amplitude",
+                    "profundidade",
+                    "prof_limitada",
+                    "aprofundamento_iterativo",
+                    "bidirecional",
+                    "custo_uniforme",
+                    "greedy",
+                    "a_estrela",
+                    "aia_estrela",
+                ]:
                     self.modo_selecionado = resultado_modo
                     self.estado_atual = "configurar_campos"
                     self.input_origem = ""

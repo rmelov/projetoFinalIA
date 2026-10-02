@@ -52,6 +52,26 @@ class MenuModosJogo:
                 "desc": "Busca simultânea a partir da origem e do destino. Quase impossível escapar!"
             },
             {
+                "id": "custo_uniforme",
+                "nome": "Custo Uniforme",
+                "desc": "Prioriza o menor custo acumulado. Funciona bem em mapas com custos diferentes."
+            },
+            {
+                "id": "greedy",
+                "nome": "Greedy",
+                "desc": "Escolhe a direção que parece mais promissora, sem olhar o custo total."
+            },
+            {
+                "id": "a_estrela",
+                "nome": "A-Estrela",
+                "desc": "Equilibra custo acumulado e heurística para perseguir com eficiência."
+            },
+            {
+                "id": "aia_estrela",
+                "nome": "AIA-Estrela",
+                "desc": "Variante mais agressiva com limite adaptativo. É a mais exigente da lista."
+            },
+            {
                 "id": "voltar",
                 "nome": "VOLTAR",
                 "desc": "Retorna ao menu principal."
