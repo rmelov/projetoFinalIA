@@ -13,9 +13,11 @@ from itens.pocaoCoragem import PocaoCoragem
 from itens.vortex import Vortex
 from itens.saida import Saida
 from utilidades import config
+from utilidades.metodosBusca import METODO_IDS
 
 class EstadoJogo:
     def __init__(self, conversor=None, modo_jogo="amplitude"):
+        self.modo_jogo = modo_jogo if modo_jogo in METODO_IDS else "amplitude"
         self.mapa = []
         self.pos_jogador = []
         self.pos_saida = ()
@@ -48,8 +50,15 @@ class EstadoJogo:
         self.ultimo_passo_jogador = 0
         self.tempo_congelamento_inimigo = 0
 
-        self.gerenciador_recorde = GerenciadorRecorde(modo_jogo=modo_jogo)
+        self.gerenciador_recorde = GerenciadorRecorde(modo_jogo=self.modo_jogo)
         self.pontuacao_maxima, self.nivel_maximo = self.gerenciador_recorde.carregar()
+        self._recriar_inimigo()
+
+    def _recriar_inimigo(self):
+        if self.inimigo is None:
+            self.inimigo = Perseguidor(pos_inicial=(1, 1), modo=self.modo_jogo)
+        else:
+            self.inimigo.modo = self.modo_jogo
 
     @property
     def nivel_atual(self):
@@ -178,7 +187,7 @@ class EstadoJogo:
         if resetar_total or not self.pos_jogador or not self.inimigo:
             self.mapa, pos_jog_tup, pos_inim_tup, self.pos_saida = gerar_labirinto_base(linhas_atuais, colunas_atuais)
             self.pos_jogador = list(pos_jog_tup)
-            self.inimigo = Perseguidor(pos_inicial=pos_inim_tup)
+            self.inimigo = Perseguidor(pos_inicial=pos_inim_tup, modo=self.modo_jogo)
             self.inimigo.ajustar_velocidade(self.indice_nivel)
             self.rastro_inimigo = {tuple(pos_inim_tup)}
             self.jogo_iniciado = False
@@ -353,3 +362,10 @@ class EstadoJogo:
 
     def obter_pontuacao_total(self):
         return self.pontuacao_geral.valor + self.pontuacao_partida.pontos
+
+    def definir_modo_jogo(self, modo_jogo):
+        self.modo_jogo = modo_jogo if modo_jogo in METODO_IDS else "amplitude"
+        if self.inimigo is not None:
+            self.inimigo.modo = self.modo_jogo
+        self.gerenciador_recorde = GerenciadorRecorde(modo_jogo=self.modo_jogo)
+        self.pontuacao_maxima, self.nivel_maximo = self.gerenciador_recorde.carregar()
