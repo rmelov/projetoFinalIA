@@ -1,9 +1,9 @@
 """
 Desenha a rota até a saída quando a poção está ativa. Antes, esta classe
 tinha sua PRÓPRIA implementação de BFS (`_encontrar_caminho`), duplicando
-`amplitude_grid`. Agora ela recebe o mesmo buscador (BuscaCaminho) usado
-pelo perseguidor e pelo Laboratório de Busca — o projeto deixa de ter duas
-implementações de busca em largura.
+`amplitude_grid`. Agora ela recebe o mesmo buscador usado pelo
+perseguidor — o projeto deixa de ter duas implementações de busca em
+largura.
 """
 from apresentacao.cena.caminho.desenhadorCaminho import DesenhadorCaminho
 from apresentacao.cena.caminho.detectorOclusao import DetectorOclusao
