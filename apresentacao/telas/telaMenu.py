@@ -8,7 +8,7 @@ import pygame
 from apresentacao.entrada.mapeadorTeclas import MapeadorTeclas
 from apresentacao.ui.botao import Botao
 
-OPCOES = ["JOGAR", "LABORATÓRIO DE BUSCA", "TUTORIAL", "SOBRE", "SAIR"]
+OPCOES = ["JOGAR", "TUTORIAL", "SOBRE", "SAIR"]
 
 
 class TelaMenu:

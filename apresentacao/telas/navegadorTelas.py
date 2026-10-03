@@ -4,7 +4,6 @@ cinco outras responsabilidades."""
 from apresentacao.loopJogo import LoopJogo
 from apresentacao.recursos.fontes import Fontes
 from apresentacao.telas.telaCoordenadas import TelaCoordenadas
-from apresentacao.telas.telaLaboratorioBusca import TelaLaboratorioBusca
 from apresentacao.telas.telaMenu import TelaMenu
 from apresentacao.telas.telaModos import TelaModos
 from apresentacao.telas.telaTexto import SOBRE, TUTORIAL, TelaTexto
@@ -23,9 +22,6 @@ class NavegadorTelas:
         self.telaTutorial = TelaTexto(contexto, fontes, TUTORIAL)
         self.telaSobre = TelaTexto(contexto, fontes, SOBRE)
         self.loopJogo = LoopJogo(contexto, conversor, buscador, repositorioRecorde)
-        self.telaLaboratorio = TelaLaboratorioBusca(
-            contexto, fontes, buscador, obterPartidaAtual=lambda: self.loopJogo.partida
-        )
 
     def executar(self):
         while True:
@@ -33,8 +29,6 @@ class NavegadorTelas:
 
             if opcao == "JOGAR":
                 self._fluxoJogar()
-            elif opcao == "LABORATÓRIO DE BUSCA":
-                self.telaLaboratorio.executar()
             elif opcao == "TUTORIAL":
                 self.telaTutorial.executar()
             elif opcao == "SOBRE":

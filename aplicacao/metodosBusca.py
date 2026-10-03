@@ -4,16 +4,16 @@ Catálogo único dos métodos de busca do projeto.
 Este é o ÚNICO arquivo que conhece os nomes reais dos métodos dentro de
 algoritmos/busca/buscaNP.py e algoritmos/busca/BuscaP.py — arquivos que não
 são alterados por este projeto. Todo o resto do sistema (o inimigo do jogo,
-a tela de seleção de modo, o repositório de recordes e o Laboratório de
-Busca) consulta este catálogo em vez de conhecer os pacotes de busca
-diretamente. Para acrescentar um método novo no futuro, basta implementá-lo
-em algoritmos/busca e acrescentar uma entrada em METODOS_DISPONIVEIS —
+a tela de seleção de modo e o repositório de recordes) consulta este
+catálogo em vez de conhecer os pacotes de busca diretamente. Para
+acrescentar um método novo no futuro, basta implementá-lo em
+algoritmos/busca e acrescentar uma entrada em METODOS_DISPONIVEIS —
 nenhum outro arquivo do projeto precisa mudar (Aberto/Fechado).
 
 Os cinco primeiros métodos (não ponderados) são os usados pelo inimigo do
 jogo e têm arquivo de recorde associado. Os quatro últimos (ponderados) usam
-o custo de movimento de algoritmos/busca/BuscaP.py e aparecem só no
-Laboratório de Busca.
+o custo de movimento de algoritmos/busca/BuscaP.py e aparecem na seleção
+de modos do jogo.
 """
 from dataclasses import dataclass
 from typing import Callable, Optional, Tuple
@@ -45,8 +45,7 @@ def _chamarBuscaNpSemLimite(nomeMetodo: str) -> Callable:
 def _chamarBuscaNpComLimite(nomeMetodo: str, limitePadraoFn: Callable) -> Callable:
     """Chamador de um método de buscaNP que exige um limite de profundidade.
     `limitePadraoFn(mapa, nx, ny)` é usado quando o chamador não recebe um
-    `limite` explícito — cada consumidor (jogo ou Laboratório) pode passar
-    o seu próprio valor."""
+    `limite` explícito."""
 
     def chamador(instancia, origem, destino, mapa, nx, ny, limite=None):
         metodoReal = getattr(instancia, nomeMetodo)
@@ -95,7 +94,7 @@ METODOS_DISPONIVEIS = [
         descricao="Restrito a um limite de passos. Se o jogador estiver longe, o perseguidor se perde.",
         ponderado=False, corRota=(255, 205, 60),
         chamador=_chamarBuscaNpComLimite(
-            "prof_limitada_grid", lambda mapa, nx, ny: 50  # sobrescrito pelo jogo/laboratório
+            "prof_limitada_grid", lambda mapa, nx, ny: 50
         ),
         arquivoRecorde="assets/recordes/recordeProfundidadeLimitada.txt",
     ),

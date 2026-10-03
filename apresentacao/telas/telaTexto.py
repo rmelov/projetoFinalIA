@@ -16,8 +16,7 @@ TUTORIAL = {
         "O vórtex embaralha o labirinto ao ser tocado — use com cautela.",
         "Pressione 'R' a qualquer momento para reiniciar a fase.",
         "",
-        "Experimente também o LABORATÓRIO DE BUSCA, no menu principal,",
-        "para comparar lado a lado os 9 métodos de busca do projeto.",
+        "Use o menu para navegar entre as telas de tutorial, informações e jogo.",
     ],
 }
 

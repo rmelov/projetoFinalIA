@@ -1,15 +1,8 @@
 ==================================================================
- LABIRINTO ISOMÉTRICO + LABORATÓRIO DE BUSCA
- ReadMe.txt
+ LABIRINTO ISOMÉTRICO
 ==================================================================
 
-Este projeto tem DUAS interfaces gráficas:
-
-  1) O JOGO (labirinto isométrico com perseguidor por IA)
-  2) O LABORATÓRIO DE BUSCA (interface pedida na atividade: selecionar
-     método, definir estado inicial/objetivo, executar, ver o caminho
-     encontrado e seu custo, e a imagem do problema com o caminho
-     desenhado)
+Este projeto é um jogo de labirinto isométrico com perseguidor por IA.
 
 Os métodos de busca (amplitude, profundidade, profundidade limitada,
 aprofundamento iterativo, bidirecional, custo uniforme, greedy, A-estrela
@@ -26,7 +19,7 @@ professor. Esses dois arquivos NÃO foram alterados.
 - Biblioteca Python: pygame >= 2.5.0 (única dependência, listada em
   requirements.txt)
 - Um ambiente com suporte gráfico (SDL). Em servidores sem tela, use um
-  X server virtual:  xvfb-run -a python3 main.py
+  X server virtual: xvfb-run -a python3 main.py
 
 ------------------------------------------------------------------
 2. COMO INSTALAR E EXECUTAR
@@ -42,7 +35,7 @@ O jogo abre em tela cheia. Se estiver rodando sem monitor (servidor),
 use "xvfb-run -a python3 main.py".
 
 ------------------------------------------------------------------
-3. FUNCIONAMENTO DA INTERFACE 1: O JOGO
+3. FUNCIONAMENTO DO JOGO
 ------------------------------------------------------------------
 
 No menu principal, escolha "JOGAR":
@@ -60,61 +53,13 @@ Controles durante a partida:
   Esc .................. voltar ao menu
 
 ------------------------------------------------------------------
-4. FUNCIONAMENTO DA INTERFACE 2: LABORATÓRIO DE BUSCA
-------------------------------------------------------------------
-
-No menu principal, escolha "LABORATÓRIO DE BUSCA". Esta tela:
-
-  a) REAPROVEITA O LABIRINTO DA PARTIDA EM ANDAMENTO
-     Se você já jogou nesta sessão, o Laboratório abre mostrando
-     exatamente o mesmo labirinto, a mesma posição do jogador (origem
-     padrão) e a mesma saída (destino padrão) da partida em curso — o
-     texto acima da grade mostra "Labirinto: partida em andamento".
-     Se você ainda não jogou, ele gera um labirinto de exemplo (mesmo
-     gerador usado pelo jogo) e mostra "labirinto de exemplo (nenhuma
-     partida em andamento)".
-     O botão "USAR LABIRINTO ATUAL (N)" atualiza a tela com o estado
-     mais recente da partida (por exemplo, depois de avançar de nível).
-
-  b) SELETOR DE MÉTODO (painel à esquerda)
-     Lista com os 9 métodos exigidos na atividade. Navegue com W/S (ou
-     as setas) ou clique diretamente sobre o nome do método. Métodos
-     marcados "(ponderado)" usam custo de movimento diferente por
-     direção (BuscaP.py); os demais contam passos (buscaNP.py).
-
-  c) DEFINIÇÃO DO ESTADO INICIAL E DO OBJETIVO (imagem central)
-     A imagem mostra TODOS os estados do problema: cada quadrado é uma
-     célula livre (clara) ou parede (escura). Origem e destino já vêm
-     preenchidos (ver item a), mas podem ser trocados:
-       - Clique ESQUERDO numa célula livre define a ORIGEM (verde).
-       - Clique DIREITO numa célula livre define o DESTINO (vermelho).
-
-  d) BOTÃO EXECUTAR
-     Roda o método selecionado entre a origem e o destino atuais.
-     Também pode ser acionado com Enter/Espaço.
-
-  e) ÁREA DE RESULTADO (painel à direita)
-     Mostra, após a execução: se um caminho foi encontrado, o CUSTO do
-     caminho, o número de passos, o tempo de execução em milissegundos
-     e a sequência completa de estados do caminho. Se não houver
-     caminho, mostra "Caminho não encontrado."
-
-  f) IMAGEM DO PROBLEMA COM O CAMINHO
-     Depois de executar, o caminho é desenhado sobre o grid, na cor
-     associada ao método selecionado.
-
-  Esc: volta ao menu principal.
-
-------------------------------------------------------------------
-5. OBSERVAÇÕES SOBRE OS MÉTODOS
+4. OBSERVAÇÕES SOBRE OS MÉTODOS
 ------------------------------------------------------------------
 
 - "Profundidade Limitada" usa um limite propositalmente pequeno (3
-  passos) no Laboratório de Busca, do mesmo jeito que no exemplo do
-  professor — por isso ela costuma FALHAR em encontrar o destino
-  quando ele está longe da origem. Isso é esperado: mostra na prática
-  a limitação do método. No JOGO, esse mesmo método usa um limite maior
-  (50 passos), senão o inimigo nunca se moveria.
+  passos) no jogo, do mesmo jeito que no exemplo do professor — por isso
+  ela costuma falhar em encontrar o destino quando ele está longe da
+  origem. Isso é esperado: mostra na prática a limitação do método.
 - "Aprofundamento Iterativo" usa um limite generoso (conta as células
   livres do grid) para garantir que encontre o caminho sempre que ele
   existir, repetindo a busca com limites crescentes.
@@ -125,7 +70,7 @@ No menu principal, escolha "LABORATÓRIO DE BUSCA". Esta tela:
   este repositório (Mapa_P1.txt, Grafo_Prova.txt, mapa4.txt).
 
 ------------------------------------------------------------------
-6. ARQUITETURA DO PROJETO
+5. ARQUITETURA DO PROJETO
 ------------------------------------------------------------------
 
 O projeto segue arquitetura em camadas, com a regra de que as setas de
@@ -148,11 +93,8 @@ dominio/              Regras do jogo, sem pygame e sem I/O:
   coordenadas/          ParserCoordenada, ValidadorCoordenada
 
 aplicacao/            Orquestração dos casos de uso:
-  metodosBusca.py       Catálogo único dos 9 métodos (única fonte de
-                         verdade — para acrescentar um método novo no
-                         futuro, basta editar este arquivo)
-  partida.py            Substitui a antiga EstadoJogo (351 linhas, 7
-                         responsabilidades); aqui só orquestra
+  metodosBusca.py       Catálogo único dos 9 métodos
+  partida.py            Substitui a antiga EstadoJogo
   preparadorFase.py, posicionadorAleatorio.py, arbitroPartida.py,
   controladorPerseguidor.py, portaBuscaCaminho.py, resultadoBusca.py
 
@@ -169,10 +111,53 @@ apresentacao/         Tudo que usa pygame:
   hud/                  Hud, PainelRecorde
   ui/                   Botao
   telas/                TelaMenu, TelaModos, TelaCoordenadas, TelaTexto
-                         (serve tutorial e sobre), TelaLaboratorioBusca,
-                         NavegadorTelas
+                         (serve tutorial e sobre), NavegadorTelas
   loopJogo.py           Laço principal de uma partida
 
 composicaoRaiz.py     Único lugar que decide QUEM implementa cada peça
                        e conecta tudo (composition root).
 main.py               5 linhas: chama composicaoRaiz e inicia.
+
+------------------------------------------------------------------
+6. PRINCIPAIS CORREÇÕES FEITAS NESTA REFATORAÇÃO
+------------------------------------------------------------------
+
+- BUG CRÍTICO: EstadoJogo recebia o modo de busca escolhido no menu mas
+  NUNCA repassava ao Perseguidor — o inimigo sempre perseguia com
+  "amplitude", não importa o que o jogador escolhesse. Corrigido: o
+  modo agora chega até o Perseguidor (Partida._prepararFaseCompleta).
+- BUG: Perseguidor usava hasattr() com os nomes ERRADOS de dois
+  métodos ("profundidade_limitada_grid" e "aprofundamento_iterativo_grid",
+  que não existem em buscaNP.py), fazendo esses dois modos caírem
+  silenciosamente em amplitude. Corrigido: o catálogo único guarda o
+  nome REAL de cada método; sem hasattr.
+- BUG: BuscaP.py compara `atual.estado == fim` sem converter `fim` para
+  tupla, então custo uniforme, greedy, A* e AIA* nunca achavam caminho
+  se destino fosse passado como lista (chegava a estourar
+  ZeroDivisionError em AIA*). Corrigido no adaptador, sem tocar em
+  BuscaP.py.
+- BUG: o recorde era lido do disco a cada frame (~30x/segundo).
+  Corrigido: RepositorioRecorde cacheia em memória.
+- DRY: quatro listas diferentes com os mesmos 5 modos de busca (menu,
+  recorde, perseguidor, validação) viraram uma só (metodosBusca.py).
+- DRY: a linha tracejada e a detecção de "atrás de parede" estavam
+  copiadas entre dois renderizadores; agora vivem em
+  apresentacao/cena/caminho/.
+- DRY: RenderizadorRotaSaida tinha seu próprio BFS, duplicando
+  amplitude_grid; agora usa o mesmo AdaptadorBusca via injeção.
+- DRY: Inventario/InventarioPartida e Pontuacao/PontuacaoPartida (pares
+  quase idênticos) viraram Mochila e Placar, uma implementação cada.
+- SRP: EstadoJogo (351 linhas, 7 responsabilidades) foi dividida em
+  Partida, PreparadorFase, PosicionadorAleatorio, ArbitroPartida e
+  ControladorPerseguidor.
+- SRP: menu.py (325 linhas, 6 responsabilidades) foi dividido em
+  TelaMenu, TelaModos, TelaCoordenadas, TelaTexto e NavegadorTelas.
+- Removido: RenderizadorMiniMapa (wrapper que só repassava chamadas),
+  Hud.calcular_posicoes_campos (código morto), os parâmetros
+  texto_origem/texto_destino/campo_ativo (nunca usados), o
+  "while rodando" com pygame.quit() inalcançável.
+- Números mágicos (9/0 de parede/livre, 7/3/2 de pontos, 2000/10000 de
+  duração) viraram constantes nomeadas em dominio/mapa e dominio/regras.
+- Todo o código novo segue camelCase (arquivos, classes, métodos,
+  variáveis) — convenção diferente do PEP 8 padrão, adotada de forma
+  deliberada para este projeto.
