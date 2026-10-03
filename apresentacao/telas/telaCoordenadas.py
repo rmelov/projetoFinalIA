@@ -82,43 +82,95 @@ class TelaCoordenadas:
 
     def _desenhar(self, textoOrigem, textoDestino, campoAtivo, mensagemErro, linhas, colunas):
         largura = self.contexto.largura
-        titulo = self.fontePrincipal.render("ORIGEM E DESTINO (opcional)", True, (255, 235, 59))
-        self.contexto.tela.blit(titulo, ((largura - titulo.get_width()) // 2, 60))
+        altura = self.contexto.altura
+
+        panelLargura = 860
+        panelAltura = 350
+        xPanel = (largura - panelLargura) // 2
+        yPanel = (altura - panelAltura) // 2
+
+        painel = pygame.Rect(xPanel, yPanel, panelLargura, panelAltura)
+        pygame.draw.rect(self.contexto.tela, (18, 18, 24), painel)
+        pygame.draw.rect(self.contexto.tela, (64, 90, 150), painel, 2)
+
+        titulo = self.fontePrincipal.render("ORIGEM E DESTINO", True, (255, 235, 59))
+        self.contexto.tela.blit(titulo, titulo.get_rect(center=(largura // 2, yPanel + 52)))
 
         dica = self.fonteSub.render(
-            f"Formato: linha,coluna — grid {linhas}x{colunas}. Deixe em branco para aleatório.",
-            True, (170, 170, 170),
+            f"Formato: linha,coluna • Grid {linhas}x{colunas} • Deixe em branco para aleatório",
+            True, (170, 170, 180),
         )
-        self.contexto.tela.blit(dica, ((largura - dica.get_width()) // 2, 110))
+        self.contexto.tela.blit(dica, dica.get_rect(center=(largura // 2, yPanel + 88)))
 
-        campoLargura, campoAltura = 220, 40
-        yOrigem = 170
-        retOrigem = self._desenharCampo("Origem", textoOrigem, campoAtivo == "origem",
-                                         largura // 2 - campoLargura - 10, yOrigem, campoLargura, campoAltura)
-        retDestino = self._desenharCampo("Destino", textoDestino, campoAtivo == "destino",
-                                          largura // 2 + 10, yOrigem, campoLargura, campoAltura)
+        campoLargura, campoAltura = 290, 56
+        yCampos = yPanel + 130
+        xOrigem = largura // 2 - campoLargura - 18
+        xDestino = largura // 2 + 18
+
+        retOrigem = self._desenharCampo(
+            "ORIGEM",
+            textoOrigem,
+            campoAtivo == "origem",
+            xOrigem,
+            yCampos,
+            campoLargura,
+            campoAltura,
+        )
+        retDestino = self._desenharCampo(
+            "DESTINO",
+            textoDestino,
+            campoAtivo == "destino",
+            xDestino,
+            yCampos,
+            campoLargura,
+            campoAltura,
+        )
 
         if mensagemErro:
-            erro = self.fonteSub.render(mensagemErro, True, (255, 90, 90))
-            self.contexto.tela.blit(erro, ((largura - erro.get_width()) // 2, yOrigem + 70))
+            erro = self.fonteSub.render(mensagemErro, True, (255, 100, 100))
+            self.contexto.tela.blit(erro, erro.get_rect(center=(largura // 2, yPanel + 215)))
+            btnY = yPanel + 250
+        else:
+            btnY = yPanel + 235
 
-        botaoJogar = Botao("JOGAR", (largura // 2, yOrigem + 140), self.fonteItem)
-        retJogar = botaoJogar.desenhar(self.contexto.tela)
+        mousePos = pygame.mouse.get_pos()
+        botaoTexto = self.fonteItem.render("JOGAR", True, (255, 255, 255))
+        botaoRect = botaoTexto.get_rect(center=(largura // 2, btnY))
+        larguraBotao = max(170, botaoRect.width + 48)
+        alturaBotao = 54
+        retBotaoJogar = pygame.Rect(0, 0, larguraBotao, alturaBotao)
+        retBotaoJogar.center = (largura // 2, btnY)
 
-        rodape = self.fonteSub.render("TAB: trocar campo | Enter: confirmar | ESC: voltar", True, (140, 140, 140))
-        self.contexto.tela.blit(rodape, ((largura - rodape.get_width()) // 2, self.contexto.altura - 40))
+        corBotao = (255, 235, 59) if retBotaoJogar.collidepoint(mousePos) else (32, 32, 40)
+        corBorda = (255, 235, 59) if retBotaoJogar.collidepoint(mousePos) else (90, 90, 110)
+        pygame.draw.rect(self.contexto.tela, corBotao, retBotaoJogar, border_radius=16)
+        pygame.draw.rect(self.contexto.tela, corBorda, retBotaoJogar, 2, border_radius=16)
 
-        return retOrigem, retDestino, retJogar
+        textoBotao = self.fonteItem.render("JOGAR", True, (255, 255, 255))
+        self.contexto.tela.blit(textoBotao, textoBotao.get_rect(center=retBotaoJogar.center))
+
+        rodape = self.fonteSub.render(
+            "TAB: trocar campo | Enter: confirmar | ESC: voltar",
+            True,
+            (140, 140, 145),
+        )
+        self.contexto.tela.blit(rodape, rodape.get_rect(center=(largura // 2, altura - 44)))
+
+        return retOrigem, retDestino, retBotaoJogar
 
     def _desenharCampo(self, rotulo, texto, ativo, x, y, largura, altura):
-        rotuloSuperficie = self.fonteSub.render(rotulo, True, (200, 200, 200))
-        self.contexto.tela.blit(rotuloSuperficie, (x, y - 22))
+        rotuloSuperficie = self.fonteSub.render(rotulo, True, (211, 220, 240))
+        self.contexto.tela.blit(rotuloSuperficie, (x, y - 26))
 
         retangulo = pygame.Rect(x, y, largura, altura)
-        cor = COR_CAMPO_ATIVO if ativo else COR_CAMPO_INATIVO
-        pygame.draw.rect(self.contexto.tela, (30, 30, 36), retangulo)
-        pygame.draw.rect(self.contexto.tela, cor, retangulo, 2)
+        corBorda = COR_CAMPO_ATIVO if ativo else COR_CAMPO_INATIVO
+        pygame.draw.rect(self.contexto.tela, (20, 20, 28), retangulo, border_radius=12)
+        pygame.draw.rect(self.contexto.tela, corBorda, retangulo, 2, border_radius=12)
 
-        textoSuperficie = self.fonteItem.render(texto or " ", True, (255, 255, 255))
-        self.contexto.tela.blit(textoSuperficie, (retangulo.x + 8, retangulo.y + (altura - textoSuperficie.get_height()) // 2))
+        preenchimento = texto or " "
+        textoSuperficie = self.fonteItem.render(preenchimento, True, (255, 255, 255))
+        self.contexto.tela.blit(
+            textoSuperficie,
+            (retangulo.x + 14, retangulo.y + (altura - textoSuperficie.get_height()) // 2),
+        )
         return retangulo
