@@ -1,28 +1,5 @@
-import sys
-import pygame
-
-from componentes.conversorIsometrico import ConversorIsometrico
-from renderizacao.renderizadorIsometrico import RenderizadorIsometrico
-from utilidades import config
-from utilidades.gerenciadorJogo import GerenciadorJogo
-from componentes.menu.menu import MenuPrincipal
-
-pygame.init()
-info_display = pygame.display.Info()
-config.LARGURA, config.ALTURA = info_display.current_w, info_display.current_h
-
-tela = pygame.display.set_mode((config.LARGURA, config.ALTURA), pygame.FULLSCREEN)
-pygame.display.set_caption(config.TITULO)
-
-conversor = ConversorIsometrico(
-    largura_tile=config.LARGURA_TILE, 
-    altura_tile=config.ALTURA_TILE, 
-    deslocamento_x=config.LARGURA // 2, 
-    deslocamento_y=config.ALTURA // 2
-)
-renderizador = RenderizadorIsometrico(tela, conversor)
-gerenciador = GerenciadorJogo(tela, renderizador)
-menu_principal = MenuPrincipal(tela, gerenciador)
+from composicaoRaiz import montarAplicacao
 
 if __name__ == "__main__":
-    menu_principal.executar()
+    navegador = montarAplicacao()
+    navegador.executar()

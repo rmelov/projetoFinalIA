@@ -1,0 +1,5 @@
+"""Quanto vale cada acontecimento do jogo."""
+
+PONTOS_COLETAR_POCAO = 3
+PONTOS_ACIONAR_VORTEX = 7
+PONTOS_LIMPAR_RASTRO_COM_POCAO = 2
